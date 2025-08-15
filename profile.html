@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profil – YGJ</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <header>
+    <a href="index.html" class="home-btn">
+      <img src="https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/home-page-white-icon.png" alt="Home">
+    </a>
+    <h1>Youth Growing Journey</h1>
+    <button id="menu-toggle" class="menu-btn">&#9776;</button>
+  </header>
+
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <button id="close-sidebar" class="close-btn">&times;</button>
+    </div>
+    <div class="sidebar-content">
+      <button onclick="window.location.href='profile.html'"><i class="fa-solid fa-user"></i> Profil</button>
+      <button onclick="window.location.href='about-us.html'"><i class="fa-solid fa-info-circle"></i> Über uns</button>
+      <button onclick="window.location.href='contact.html'"><i class="fa-solid fa-envelope"></i> Kontakt</button>
+      <button onclick="window.location.href='logout.html'"><i class="fa-solid fa-right-from-bracket"></i> Abmelden</button>
+    </div>
+  </div>
+
+  <section class="intro">
+    <h2>Dein Profil</h2>
+    <p>Willkommen zurück bei YGJ! Hier findest du eine Übersicht deiner persönlichen Daten und Fortschritte.</p>
+
+    <div style="margin-top: 30px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;">
+      <p><strong>Name:</strong> Max Mustermann</p>
+      <p><strong>Mitglied seit:</strong> Januar 2025</p>
+      <p><strong>Status:</strong> Kostenloses Mitglied</p>
+      <p><strong>Fortschritt:</strong> 35% deiner Ziele erreicht</p>
+    </div>
+
+    <div style="margin-top: 20px;">
+      <button class="btn">Profil bearbeiten</button>
+      <button class="btn">Statistiken ansehen</button>
+    </div>
+  </section>
+
+  <footer>
+    &copy; Youth Growing Journey – built for a strong generation.
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
