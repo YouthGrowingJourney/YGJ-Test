@@ -18,6 +18,7 @@
     </div>
   </header>
 
+  <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <button id="close-sidebar" class="close-btn">&times;</button>
@@ -31,8 +32,32 @@
   </div>
 
   <section class="intro">
-    <h2>Dein Profil</h2>
-    <p>Willkommen, <span id="username"></span> 👋</p>
+    <h2>Welcome, <span id="username"></span> 👋</h2>
+    <p>Here’s an overview of your journey and progress. Keep going, you’re doing great!</p>
+
+    <div class="profile-stats">
+      <div class="stat">
+        <h3 id="progress-percentage">0%</h3>
+        <p>Goals Completed</p>
+      </div>
+      <div class="stat">
+        <h3 id="tasks-completed">0</h3>
+        <p>Tasks Completed</p>
+      </div>
+      <div class="stat">
+        <h3 id="streak-days">0</h3>
+        <p>Consecutive Days Active</p>
+      </div>
+      <div class="stat">
+        <h3 id="level">1</h3>
+        <p>Level</p>
+      </div>
+    </div>
+
+    <div class="profile-buttons">
+      <button class="btn" id="edit-profile">Edit Profile</button>
+      <button class="btn" id="view-achievements">View Achievements</button>
+    </div>
   </section>
 
   <footer>&copy; Youth Growing Journey – built for a strong generation.</footer>
