@@ -66,14 +66,37 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // --- Profile Seite ---
-  const profileUsername = document.getElementById("username");
-  if (profileUsername) {
-    const currentUser = localStorage.getItem("currentUser");
-    if (!currentUser) {
-      window.location.href = "login.html";
-    } else {
-      profileUsername.textContent = currentUser;
-    }
+// --- Profile Stats ---
+const profileUsername = document.getElementById("username");
+if (profileUsername) {
+  const currentUser = localStorage.getItem("currentUser");
+  if (!currentUser) {
+    window.location.href = "login.html";
+  } else {
+    profileUsername.textContent = currentUser;
+
+    // Demo-Statistiken, in Zukunft dynamisch aus Datenbank
+    const progress = Math.floor(Math.random() * 100); // % Goals completed
+    const tasks = Math.floor(Math.random() * 50) + 1;  // Tasks completed
+    const streak = Math.floor(Math.random() * 30);     // Days active
+    const level = Math.floor(progress / 20) + 1;       // Level based on progress
+
+    document.getElementById("progress-percentage").textContent = progress + "%";
+    document.getElementById("tasks-completed").textContent = tasks;
+    document.getElementById("streak-days").textContent = streak;
+    document.getElementById("level").textContent = level;
   }
+}
+
+// --- Optional: Button Actions ---
+const editProfileBtn = document.getElementById("edit-profile");
+if (editProfileBtn) {
+  editProfileBtn.addEventListener("click", () => alert("Editing profile feature coming soon!"));
+}
+
+const viewAchievementsBtn = document.getElementById("view-achievements");
+if (viewAchievementsBtn) {
+  viewAchievementsBtn.addEventListener("click", () => alert("Achievements page coming soon!"));
+}
+
 });
