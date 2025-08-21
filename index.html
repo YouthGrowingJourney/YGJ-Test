@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -15,9 +15,6 @@
       <img src="https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/home-page-white-icon.png" alt="Home">
     </a>
     <h1>Youth Growing Journey</h1>
-    <button class="btn login-header-btn" onclick="window.location.href='login.html'">
-      <i class="fa-solid fa-right-to-bracket"></i> Log In
-    </button>
     <button id="menu-toggle" class="menu-btn">&#9776;</button>
   </header>
 
@@ -26,10 +23,8 @@
       <button id="close-sidebar" class="close-btn">&times;</button>
     </div>
     <div class="sidebar-content">
-      <button>Profil</button>
-      <button>Über uns</button>
-      <button>Kontakt</button>
-      <button>Abmelden</button>
+      <button onclick="window.location.href='login.html'"><i class="fa-solid fa-right-to-bracket"></i> Log In</button>
+      <button onclick="window.location.href='register.html'"><i class="fa-solid fa-user-plus"></i> Register</button>
     </div>
   </div>
 
@@ -44,6 +39,7 @@
   <footer>
     &copy; Youth Growing Journey – built for a strong generation.
   </footer>
+
   <script src="script.js"></script>
 </body>
 </html>
