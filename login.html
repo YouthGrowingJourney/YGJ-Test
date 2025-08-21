@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -23,18 +23,16 @@
       <button id="close-sidebar" class="close-btn">&times;</button>
     </div>
     <div class="sidebar-content">
-      <button onclick="window.location.href='profile.html'"><i class="fa-solid fa-user"></i> Profil</button>
-      <button onclick="window.location.href='about-us.html'"><i class="fa-solid fa-info-circle"></i> Über uns</button>
-      <button onclick="window.location.href='contact.html'"><i class="fa-solid fa-envelope"></i> Kontakt</button>
-      <button onclick="window.location.href='logout.html'"><i class="fa-solid fa-right-from-bracket"></i> Abmelden</button>
+      <button onclick="window.location.href='login.html'"><i class="fa-solid fa-right-to-bracket"></i> Log In</button>
+      <button onclick="window.location.href='register.html'"><i class="fa-solid fa-user-plus"></i> Register</button>
     </div>
   </div>
 
   <section class="intro">
-    <h2>Willkommen zurück</h2>
-    <input type="text" id="username" placeholder="Benutzername" class="login-input">
-    <input type="password" id="password" placeholder="Passwort" class="login-input">
-    <button class="btn" id="login-submit">Anmelden</button>
+    <h2>Log In</h2>
+    <input type="text" id="login-username" placeholder="Benutzername" class="login-input">
+    <input type="password" id="login-password" placeholder="Passwort" class="login-input">
+    <button class="btn" id="login-submit">Einloggen</button>
     <p id="login-message"></p>
   </section>
 
