@@ -31,11 +31,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (user) {
         localStorage.setItem("currentUser", username);
-        msg.textContent = "Login erfolgreich!";
+        msg.textContent = "Log-In Successful!";
         msg.style.color = "#0f0";
         setTimeout(() => window.location.href = "profile.html", 1000);
       } else {
-        msg.textContent = "Benutzername oder Passwort falsch!";
+        msg.textContent = "Wrong Username or Password";
         msg.style.color = "#f00";
       }
     });
