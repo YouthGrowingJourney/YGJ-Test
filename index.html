@@ -1,46 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YGJ</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YGJ-Home</title>
+  <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
   <header>
-    <a href="index.html" class="home-btn"><img src="https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/home-page-white-icon.png" alt="Home"></a>
+    <a href="https://youthgrowingjourney.github.io/YGJ/index.html" class="home-btn">
+      <img src="https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/home-page-white-icon.png" alt="Home">
+    </a>
     <h1>Youth Growing Journey</h1>
-    <div class="header-buttons">
-      <button class="btn" onclick="window.location.href='login.html'"><i class="fa-solid fa-right-to-bracket"></i> Log In</button>
-      <button class="btn" onclick="window.location.href='register.html'"><i class="fa-solid fa-user-plus"></i> Sign Up</button>
-      <button id="menu-toggle" class="menu-btn">&#9776;</button>
-    </div>
+   <!-- Login Button -->
+<button id="login-btn" class="btn login-header-btn" onclick="window.location.href='login.html'">
+  <i class="fa-solid fa-right-to-bracket"></i> Log In
+</button>
+<!-- Sign Up Button -->
+<button id="signup-btn" class="btn" onclick="window.location.href='register.html'">
+  <i class="fa-solid fa-user-plus"></i> Sign Up
+</button>   
+<button id="theme-toggle" class="theme-btn" aria-label="Switch theme">🌙</button>
+<!-- Menü Button -->
+<button id="menu-toggle" class="menu-btn">&#9776;</button>
   </header>
-
-  <div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <button id="close-sidebar" class="close-btn">&times;</button>
-    </div>
-    <div class="sidebar-content">
-      <button onclick="window.location.href='profile.html'"><i class="fa-solid fa-user"></i> Profile</button>
-      <button onclick="window.location.href='about-us.html'"><i class="fa-solid fa-info-circle"></i> About Us</button>
-      <button onclick="window.location.href='contact.html'"><i class="fa-solid fa-envelope"></i> Contact</button>
-      <button id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Log Out</button>
-    </div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <button id="close-sidebar" class="close-btn">&times;</button>
   </div>
-
+<div class="sidebar-content">
+  <button onclick="window.location.href='profile.html'">
+    <i class="fa-solid fa-user"></i> Profile
+  </button>
+  <button onclick="window.location.href='about-us.html'">
+    <i class="fa-solid fa-info-circle"></i> About Us
+  </button>
+  <button onclick="window.location.href='contact.html'">
+    <i class="fa-solid fa-envelope"></i> Contact Us
+  </button>
+  <button id="logout-btn">
+    <i class="fa-solid fa-right-from-bracket"></i> Log Out
+  </button>
+</div>
+</div>
   <section class="intro">
-    <p>Motivation, Planning and Success – everything at one spot. Learn and experience free Growing-Basics and start your journey!</p>
+   <p>Motivation, Planning and Success – everything at one spot. Learn and experience free Growing-Basics and start your journey!</p>
     <div class="buttons">
-      <button class="btn">Start free now</button>
-      <button class="btn">Premium available soon</button>
-    </div>
+     <button onclick="window.location.href='free-plan.html'" class="btn">Start free now</button>
+    <button class="btn">Premium available soon</button>
+   </div>
   </section>
-
-  <footer>&copy; Youth Growing Journey – built for a strong generation.</footer>
-  <script src="script.js"></script>
+  <footer>
+    &copy; Youth Growing Journey – built for a strong generation.
+  </footer>
+<script src="script.js"></script>
+  <script>
+     // Delegate Logout: funktioniert auf allen Seiten
+document.body.addEventListener("click", (e) => {
+    if (e.target && e.target.id === "logout-btn") {
+        localStorage.removeItem("currentUser");
+        updateNav();
+        alert("You have been logged out.");
+        window.location.href = "index.html";
+    }
+});
+  </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
