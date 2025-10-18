@@ -1,47 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Log In – YGJ</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login – YGJ</title>
+  <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
   <header>
-    <a href="index.html" class="home-btn"><img src="https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/home-page-white-icon.png" alt="Home"></a>
+    <a href="index.html" class="home-btn">
+      <img src="https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/home-page-white-icon.png" alt="Home">
+    </a>
     <h1>Youth Growing Journey</h1>
-    <div class="header-buttons">
-      <button class="btn" onclick="window.location.href='login.html'"><i class="fa-solid fa-right-to-bracket"></i> Log In</button>
-      <button class="btn" onclick="window.location.href='register.html'"><i class="fa-solid fa-user-plus"></i> Sign Up</button>
-      <button id="menu-toggle" class="menu-btn">&#9776;</button>
-    </div>
+       <button class="btn login-header-btn" onclick="window.location.href='login.html'">
+    <i class="fa-solid fa-right-to-bracket"></i> Log In
+   </button>
+     <button class="btn" onclick="window.location.href='register.html'"><i class="fa-solid fa-user-plus"></i> Sign Up</button>
+     <button id="theme-toggle" class="theme-btn" aria-label="Switch theme" style="margin-right: 10px; padding: 10px 12px 12px 12px;">🌙</button>
+    <button id="menu-toggle" class="menu-btn">&#9776;</button>
   </header>
-
-  <div class="sidebar" id="sidebar">
+    <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <button id="close-sidebar" class="close-btn">&times;</button>
     </div>
     <div class="sidebar-content">
-      <button onclick="window.location.href='index.html'"><i class="fa-solid fa-house"></i> Home</button>
-      <button onclick="window.location.href='profile.html'"><i class="fa-solid fa-user"></i> Profile</button>
-      <button onclick="window.location.href='about-us.html'"><i class="fa-solid fa-info-circle"></i> About Us</button>
-      <button onclick="window.location.href='contact.html'"><i class="fa-solid fa-envelope"></i> Contact</button>
-      <button id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Log Out</button>
+     <button onclick="window.location.href='profile.html'">
+      <i class="fa-solid fa-user"></i> Profile
+     </button>
+   <button onclick="window.location.href='about-us.html'">
+    <i class="fa-solid fa-info-circle"></i> About Us
+   </button>
+  <button onclick="window.location.href='contact.html'">
+    <i class="fa-solid fa-envelope"></i> Contact Us
+  </button>  
     </div>
   </div>
 
   <section class="intro">
     <h2>Log In</h2>
-    <input type="text" id="login-username" placeholder="Benutzername" class="login-input">
-    <input type="password" id="login-password" placeholder="Passwort" class="login-input">
-    <button class="btn" id="login-submit">Einloggen</button>
+    <input type="text" id="login-username" placeholder="Username" class="login-input">
+    <input type="password" id="login-password" placeholder="Password" class="login-input">
+    <button class="btn" id="login-submit">Confirm</button>
     <p id="login-message"></p>
   </section>
 
-  <footer>&copy; Youth Growing Journey – built for a strong generation.</footer>
+  <footer>
+    &copy; Youth Growing Journey – built for a strong generation.
+  </footer>
+
   <script src="script.js"></script>
+  <script>
+    document.getElementById("login-submit").addEventListener("click", () => {
+      const user = document.getElementById("login-username").value.trim();
+      const pass = document.getElementById("login-password").value.trim();
+      const message = document.getElementById("login-message");
+
+      let users = JSON.parse(localStorage.getItem("users")) || [];
+      let found = users.find(u => u.username === user && u.password === pass);
+
+      if (found) {
+        message.textContent = "Log-In Succesful!";
+        message.style.color = "#0f0";
+
+        // Session speichern
+        localStorage.setItem("currentUser", user);
+
+        setTimeout(() => window.location.href = "profile.html", 1200);
+      } else {
+        message.textContent = "Wrong Username or Password!";
+        message.style.color = "#f00";
+      }
+    });
+  </script>
 </body>
 </html>
