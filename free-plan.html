@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title> YGJ-Free Plan</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <style>
+    /* keep same styles as before; omitted here for brevity in this in-file example */
+    main { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+    .card{background:rgba(255,255,255,0.06);border-radius:16px;padding:1rem}
+    /* modal */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:1200}
+    .modal-content{background:#fff;padding:1rem;border-radius:12px;max-width:800px;width:94%;}
+  </style>
+</head>
+<body>
+  <header>
+    <a href="index.html" class="home-btn" title="Home">
+      <img src="https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/home-page-white-icon.png" alt="Home">
+    </a>
+    <h1>Youth Growing Journey – Free Plan</h1>
+    <button id="theme-toggle" class="theme-btn" aria-label="Switch theme" style="margin-right: 10px; padding: 10px 12px 12px 12px">🌙</button>
+    <button id="menu-toggle" class="menu-btn" aria-label="Open menu">&#9776;</button>
+  </header>
+
+  <main>
+    <!-- ... hero and KPI area unchanged ... -->
+    <section class="card" aria-labelledby="hero-title">
+      <h2 id="hero-title">Kickstart your growth – for free</h2>
+      <p class="muted">Daily inspiration, simple tracking, and clean progress exports. Build habits, stack wins, and keep moving forward.</p>
+      <div class="kpi">
+        <div class="chip"><strong id="kpi-tasks">0</strong><div class="muted">Tasks (active)</div></div>
+        <div class="chip"><strong id="kpi-done">0</strong><div class="muted">Done (all-time)</div></div>
+        <div class="chip"><strong id="kpi-streak">0</strong><div class="muted">Day Streak</div></div>
+        <div class="chip"><strong id="kpi-progress">0%</strong><div class="muted">Progress</div></div>
+      </div>
+    </section>
+
+    <div class="grid">
+      <!-- Daily Motivation -->
+      <section class="card" aria-labelledby="motivation-title">
+        <h2 id="motivation-title"><i class="fa-solid fa-bolt"></i> Daily Quote</h2>
+        <p id="daily-quote" class="muted">Loading your quote…</p>
+        <div class="section-actions">
+          <button id="new-quote" class="btn"><i class="fa-solid fa-shuffle"></i> New Quote</button>
+          <button id="check-in" class="btn"><i class="fa-solid fa-fire"></i> Daily Check‑in</button>
+          <span id="checkin-status" class="chip badge"><i class="fa-solid fa-calendar-day"></i> Not checked in</span>
+        </div>
+      </section>
+
+      <!-- Tasks / Habit Tracker -->
+      <section class="card" aria-labelledby="tasks-title">
+        <h2 id="tasks-title"><i class="fa-solid fa-list-check"></i> Your Tasks</h2>
+        <div class="tasks-controls">
+          <input id="task-input" type="text" maxlength="60" placeholder="Enter a task…" />
+          <button id="add-task" class="btn"><i class="fa-solid fa-plus"></i> Add</button>
+        </div>
+        <ul id="task-list"></ul>
+        <div style="margin-top:.6rem; display:flex; gap:.5rem; align-items:center">
+          <button id="view-archive" class="btn"><i class="fa-solid fa-box-archive"></i> View Archive</button>
+          <button id="clear-completed" class="btn"><i class="fa-solid fa-broom"></i> Clean Completed (archive)</button>
+        </div>
+        <div class="divider"></div>
+        <div class="progress-bar-wrap" aria-label="Progress">
+          <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        <p class="notice">Progress: <strong id="progress">0%</strong></p>
+      </section>
+
+      <!-- Export / PDF -->
+      <section class="card" aria-labelledby="export-title">
+        <h2 id="export-title"><i class="fa-solid fa-file-export"></i>Downloads</h2>
+        <p class="muted">Save your current tasks, completion status, and streak as a personal PDF.</p>
+        <div class="section-actions">
+          <button id="export-pdf" class="btn"><i class="fa-solid fa-file-pdf"></i> Export my progress (PDF)</button>
+        </div>
+        <p class="pdf-note">Want a free guided starter PDF with instructions and routines? <br>
+          <button id="download-guide" class="btn" style="margin-top:.5rem"><i class="fa-solid fa-download"></i> Download YGJ Free Plan</button>
+        </p>
+        <p class="muted">The YGJ Free Plan Is A Small Book With Basic Method To Improve Your Life. It Is An Completely Free Download Without Ads.</p>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    &copy; Youth Growing Journey – Free Plan
+  </footer>
+
+  <script>
+  (function(){
+    // Namespacing and compatibility migration
+    const getCurrentUser = () => localStorage.getItem('currentUser') || 'guest';
+    const ns = (key) => `ygj_free_${getCurrentUser()}_${key}`; // per-user
+
+    // New storage structure keys:
+    // - ns('tasks_active') => active tasks array
+    // - ns('tasks_archive') => archived tasks (completed/removed)
+    // Backwards compatibility: if ns('tasks') exists and tasks_active missing, migrate it
+
+    function migrateIfNeeded(){
+      const rawOld = localStorage.getItem(ns('tasks'));
+      const activeKey = ns('tasks_active');
+      const archiveKey = ns('tasks_archive');
+      if (localStorage.getItem(activeKey)) return; // already migrated/using new keys
+      if (rawOld) {
+        try {
+          const arr = JSON.parse(rawOld || '[]');
+          // ensure doneAt for completed
+          const migrated = arr.map(t => ({ ...t, doneAt: t.done ? (t.doneAt || t.createdAt || Date.now()) : undefined }));
+          localStorage.setItem(activeKey, JSON.stringify(migrated));
+          localStorage.setItem(archiveKey, JSON.stringify([]));
+          // keep the old key as backup (do not delete) to avoid accidental data loss
+          console.info('YGJ: Migrated old tasks -> tasks_active + tasks_archive');
+        } catch(e){ console.warn('YGJ: migration failed', e); }
+      } else {
+        localStorage.setItem(activeKey, JSON.stringify([]));
+        localStorage.setItem(archiveKey, JSON.stringify([]));
+      }
+    }
+
+    // Helpers
+    function loadActiveTasks(){ try { return JSON.parse(localStorage.getItem(ns('tasks_active')) || '[]'); } catch(e){ return []; } }
+    function saveActiveTasks(tasks){ localStorage.setItem(ns('tasks_active'), JSON.stringify(tasks)); updateKPIs(); }
+    function loadArchive(){ try { return JSON.parse(localStorage.getItem(ns('tasks_archive')) || '[]'); } catch(e){ return []; } }
+    function saveArchive(arr){ localStorage.setItem(ns('tasks_archive'), JSON.stringify(arr)); }
+
+    // UI refs
+    const quoteEl = document.getElementById('daily-quote');
+    const kpiTasks = document.getElementById('kpi-tasks');
+    const kpiDone = document.getElementById('kpi-done');
+    const kpiStreak = document.getElementById('kpi-streak');
+    const kpiProgress = document.getElementById('kpi-progress');
+    const progressLabel = document.getElementById('progress');
+    const progressBar = document.getElementById('progress-bar');
+    const checkinStatus = document.getElementById('checkin-status');
+
+    // Quotes (same as before) - shortened here for brevity
+    const quotes = [
+      "If you don’t give up, you still have a chance. Giving up is the greatest failure. ~Jack Ma",
+      "We are what we repeatedly do. Excellence, then, is not an act, but a habit. ~Aristotle",
+      "Discipline is doing what you hate to do, but doing it like you love it. ~Mike Tyson",
+      "Motivation is crap. Motivation comes and goes. When you’re driven, whatever is in front of you will get destroyed. ~David Goggins"
+    ];
+    function randomQuote(){ quoteEl.textContent = quotes[Math.floor(Math.random()*quotes.length)]; }
+
+    // Task rendering
+    function renderTasks(){
+      const list = document.getElementById('task-list');
+      const tasks = loadActiveTasks();
+      list.innerHTML = '';
+      tasks.forEach((t,i)=>{
+        const li = document.createElement('li'); li.dataset.index = i;
+        if (t.done) li.classList.add('done');
+        li.innerHTML = `
+          <input type="checkbox" ${t.done ? 'checked' : ''} aria-label="Toggle done" />
+          <span class="task-text">${escapeHtml(t.text)}</span>
+          <div>
+            <button class="icon-btn move-up" title="Move up"><i class="fa-solid fa-chevron-up"></i></button>
+            <button class="icon-btn move-down" title="Move down"><i class="fa-solid fa-chevron-down"></i></button>
+          </div>
+          <button class="icon-btn remove" title="Delete"><i class="fa-solid fa-trash"></i></button>
+        `;
+        list.appendChild(li);
+      });
+      attachTaskHandlers();
+      updateKPIs();
+    }
+
+    function attachTaskHandlers(){
+      document.querySelectorAll('#task-list li').forEach(li=>{
+        const idx = +li.dataset.index;
+        li.querySelector('input[type="checkbox"]').addEventListener('change', ()=> toggleDone(idx));
+        li.querySelector('.remove').addEventListener('click', ()=> removeTask(idx));
+        li.querySelector('.move-up').addEventListener('click', ()=> moveTask(idx, -1));
+        li.querySelector('.move-down').addEventListener('click', ()=> moveTask(idx, +1));
+      });
+    }
+
+    function addTask(text){
+      if (!text || !text.trim()) return;
+      const tasks = loadActiveTasks();
+      tasks.push({ text: text.trim(), done: false, createdAt: Date.now() });
+      saveActiveTasks(tasks); renderTasks();
+    }
+
+    function toggleDone(index){
+      const tasks = loadActiveTasks(); if (!tasks[index]) return;
+      tasks[index].done = !tasks[index].done;
+      if (tasks[index].done) tasks[index].doneAt = tasks[index].doneAt || Date.now(); else delete tasks[index].doneAt;
+      // trigger check-in when a task is marked done
+      if (tasks[index].done) doCheckIn();
+      saveActiveTasks(tasks); renderTasks();
+    }
+
+    // When removing a task: if it's done -> archive it (preserve history). If it's pending -> ask to archive or delete.
+    function removeTask(index){
+      const tasks = loadActiveTasks(); if (!tasks[index]) return;
+      const t = tasks[index];
+      if (t.done) {
+        // Move to archive
+        const arch = loadArchive();
+        arch.unshift({ ...t, removedAt: Date.now() });
+        saveArchive(arch);
+        tasks.splice(index, 1);
+        saveActiveTasks(tasks); renderTasks();
+      } else {
+        // pending task: ask user whether to delete or archive
+        const proceed = confirm('This task is not completed. Do you want to archive it instead of deleting? Press OK to archive, Cancel to permanently delete.');
+        if (proceed) {
+          const arch = loadArchive();
+          arch.unshift({ ...t, removedAt: Date.now(), archivedAsPending: true });
+          saveArchive(arch);
+        }
+        tasks.splice(index, 1);
+        saveActiveTasks(tasks); renderTasks();
+      }
+    }
+
+    function moveTask(index, dir){
+      const tasks = loadActiveTasks(); const newIndex = index + dir; if (newIndex<0||newIndex>=tasks.length) return;
+      const [item] = tasks.splice(index,1); tasks.splice(newIndex,0,item); saveActiveTasks(tasks); renderTasks();
+    }
+
+    function escapeHtml(s){ return String(s||'').replace(/[&<>\"]+/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+    // ---------- KPIs & Streak (unchanged logic but now includes archive for done count) ----------
+    function loadStreak(){ try { return JSON.parse(localStorage.getItem(ns('streak')) || '{"count":0,"last":""}'); } catch(e){ return { count:0, last: '' }; } }
+    function saveStreak(obj){ localStorage.setItem(ns('streak'), JSON.stringify(obj)); }
+    function formatDate(d){ return d.toISOString().slice(0,10); }
+    function doCheckIn(){
+      const today = formatDate(new Date()); const s = loadStreak(); if (s.last === today) return; const yesterday = formatDate(new Date(Date.now()-86400000)); const nextCount = (s.last===yesterday) ? s.count+1 : 1; const updated = { count: nextCount, last: today }; saveStreak(updated); reflectStreak(updated);
+    }
+    function reflectStreak(s){ kpiStreak.textContent = s.count; if (s.last === formatDate(new Date())) checkinStatus.innerHTML = '<i class="fa-solid fa-circle-check"></i> Checked in today'; else checkinStatus.innerHTML = '<i class="fa-solid fa-calendar-day"></i> Not checked in'; }
+
+    function updateKPIs(){
+      const active = loadActiveTasks(); const archive = loadArchive();
+      const totalActive = active.length;
+      // done all-time = done in active + done in archive
+      const doneActive = active.filter(t=>t.done).length;
+      const doneArchived = archive.filter(t=>t.done).length;
+      const doneAllTime = doneActive + doneArchived;
+      const progress = totalActive ? Math.round((doneActive / totalActive) * 100) : 0; // progress pertains to active list
+      kpiTasks.textContent = totalActive;
+      kpiDone.textContent = doneAllTime;
+      kpiProgress.textContent = progress + '%';
+      progressLabel.textContent = progress + '%';
+      progressBar.style.width = progress + '%';
+    }
+
+    // ---------- Archive Modal UI ----------
+    function openArchiveModal(){
+      const archive = loadArchive();
+      const modal = document.createElement('div'); modal.className = 'modal-overlay';
+      const content = document.createElement('div'); content.className = 'modal-content';
+      content.innerHTML = `<h3>Archive</h3><p class="small">Your archived tasks (completed or removed). They stay here so statistics reflect your progress.</p>`;
+      const listWrap = document.createElement('div'); listWrap.style.maxHeight = '55vh'; listWrap.style.overflow = 'auto'; listWrap.style.marginTop = '8px';
+      if (!archive.length) listWrap.innerHTML = '<div class="small">Archive is empty.</div>';
+      else {
+        archive.forEach((a,i)=>{
+          const row = document.createElement('div'); row.style.display='flex'; row.style.gap='8px'; row.style.alignItems='center'; row.style.padding='8px'; row.style.borderBottom='1px solid #eee';
+          row.innerHTML = `<div style="flex:1"><strong>${escapeHtml(a.text)}</strong><div style="font-size:12px;color:#666">${a.done?('Done at: '+new Date(a.doneAt).toLocaleString()):'Not completed'}${a.removedAt?(' • removed: '+new Date(a.removedAt).toLocaleString()):''}</div></div>`;
+          const btns = document.createElement('div'); btns.style.display='flex'; btns.style.gap='6px';
+          const restore = document.createElement('button'); restore.className='btn'; restore.textContent='Restore'; restore.addEventListener('click', ()=>{
+            // restore to active (unshift)
+            const active = loadActiveTasks(); active.unshift({ text: a.text, done: !!a.done, createdAt: a.createdAt || Date.now(), doneAt: a.doneAt });
+            saveActiveTasks(active);
+            // remove from archive
+            const arch2 = loadArchive(); arch2.splice(i,1); saveArchive(arch2);
+            modal.remove(); renderTasks();
+          });
+          const del = document.createElement('button'); del.className='btn'; del.textContent='Delete'; del.addEventListener('click', ()=>{
+            if (!confirm('Permanently delete this archived item? This cannot be undone.')) return; const arch2 = loadArchive(); arch2.splice(i,1); saveArchive(arch2); modal.remove(); openArchiveModal();
+          });
+          btns.appendChild(restore); btns.appendChild(del); row.appendChild(btns); listWrap.appendChild(row);
+        });
+      }
+      content.appendChild(listWrap);
+      const footer = document.createElement('div'); footer.style.display='flex'; footer.style.justifyContent='flex-end'; footer.style.gap='8px'; footer.style.marginTop='12px';
+      const close = document.createElement('button'); close.className='btn'; close.textContent='Close'; close.addEventListener('click', ()=> modal.remove());
+      const clearAll = document.createElement('button'); clearAll.className='btn'; clearAll.textContent='Permanently Clear All'; clearAll.addEventListener('click', ()=>{
+        if (!confirm('Permanently delete ALL archived items? This cannot be undone.')) return; localStorage.setItem(ns('tasks_archive'),'[]'); modal.remove(); renderTasks();
+      });
+      footer.appendChild(clearAll); footer.appendChild(close); content.appendChild(footer);
+      modal.appendChild(content); document.body.appendChild(modal);
+    }
+
+    // Clear completed active tasks into archive (helper)
+    function cleanCompletedToArchive(){
+      const tasks = loadActiveTasks(); const arch = loadArchive();
+      const remaining = [];
+      tasks.forEach(t=>{
+        if (t.done){ arch.unshift({ ...t, removedAt: Date.now() }); }
+        else remaining.push(t);
+      });
+      saveArchive(arch); saveActiveTasks(remaining); renderTasks();
+      alert('Completed tasks moved to archive. They will still count for your all-time stats.');
+    }
+
+    // ---------- Export PDF (includes archived counts) ----------
+    function exportPDF(){
+      const { jsPDF } = window.jspdf; const doc = new jsPDF(); const margin = 12; let y = margin;
+      doc.setFontSize(18); doc.text('YGJ – Free Plan Progress', margin, y); y+=8; doc.setFontSize(11);
+      const user = getCurrentUser(); doc.text(`User: ${user}`, margin, y); y+=6; doc.text(`Exported: ${new Date().toLocaleString()}`, margin, y); y+=10;
+      const active = loadActiveTasks(); const archive = loadArchive();
+      const totalActive = active.length; const doneActive = active.filter(t=>t.done).length; const doneArchived = archive.filter(t=>t.done).length; const doneAll = doneActive + doneArchived; const streak = loadStreak().count || 0;
+
+      doc.setFontSize(12); doc.text('Overview', margin, y); y+=7; doc.setFontSize(11);
+      doc.text(`Active tasks: ${totalActive}`, margin, y); y+=6; doc.text(`Done (active): ${doneActive}`, margin, y); y+=6; doc.text(`Done (archived/all-time): ${doneArchived}`, margin, y); y+=6; doc.text(`Done (all-time): ${doneAll}`, margin, y); y+=6; doc.text(`Day Streak: ${streak}`, margin, y); y+=10;
+
+      doc.text('Active Task List', margin, y); y+=7; if (!active.length){ doc.text('No active tasks.', margin, y); y+=6; } else {
+        active.forEach((t,i)=>{ const line = `${i+1}. ${t.text} — ${t.done ? 'Done' : 'Pending'}`; const lines = doc.splitTextToSize(line,180); lines.forEach(ln=>{ doc.text(ln, margin, y); y+=6; }); if (y>280){ doc.addPage(); y=margin; } });
+      }
+      // Archived summary (first 20 items)
+      if (y>240){ doc.addPage(); y=margin; }
+      doc.text('Archived (most recent)', margin, y); y+=7;
+      if (!archive.length) { doc.text('Archive empty.', margin, y); y+=6; }
+      else {
+        const slice = archive.slice(0,20);
+        slice.forEach((a,idx)=>{
+          const when = a.doneAt ? new Date(a.doneAt).toLocaleDateString() : (a.removedAt?new Date(a.removedAt).toLocaleDateString():'');
+          const line = `${idx+1}. ${a.text} — ${a.done ? 'Done' : (a.archivedAsPending ? 'Archived (pending)' : 'Removed')}${when ? ' • ' + when : ''}`;
+          const lines = doc.splitTextToSize(line,180); lines.forEach(ln=>{ doc.text(ln, margin, y); y+=6; }); if (y>280){ doc.addPage(); y=margin; }
+        });
+      }
+      if (y>260) { doc.addPage(); y=margin; }
+      doc.setFontSize(10); doc.text('Keep showing up. Small steps, daily.', margin, y);
+      doc.save('ygj_free_plan_progress.pdf');
+    }
+
+    // ---------- Guide download (same fallback) ----------
+    async function downloadGuide(){ const url = 'assets/ygj_free_plan.pdf'; try { const res = await fetch(url,{method:'HEAD'}); if (!res.ok) throw new Error('missing'); window.location.href = url; } catch(e){ alert('The YGJ Free Plan PDF will be available soon. Add your file at "assets/ygj_free_plan.pdf" to enable this button.'); } }
+
+    // ---------- UI wiring ----------
+    function bindUI(){
+      document.getElementById('new-quote').addEventListener('click', randomQuote);
+      document.getElementById('check-in').addEventListener('click', ()=>{ doCheckIn(); alert('Nice! You checked in for today. Keep the streak alive.'); });
+      document.getElementById('add-task').addEventListener('click', ()=>{ const val = document.getElementById('task-input').value.trim(); addTask(val); document.getElementById('task-input').value=''; document.getElementById('task-input').focus(); });
+      document.getElementById('task-input').addEventListener('keydown', (e)=>{ if (e.key==='Enter'){ e.preventDefault(); document.getElementById('add-task').click(); } });
+      document.getElementById('view-archive').addEventListener('click', openArchiveModal);
+      document.getElementById('clear-completed').addEventListener('click', cleanCompletedToArchive);
+      document.getElementById('export-pdf').addEventListener('click', exportPDF);
+      document.getElementById('download-guide').addEventListener('click', downloadGuide);
+    }
+
+    // ---------- Init ----------
+    function init(){
+      migrateIfNeeded(); randomQuote(); renderTasks(); reflectStreak(loadStreak()); bindUI();
+      // listen for cross-tab updates
+      window.addEventListener('storage', (e)=>{ if (e.key && (e.key.startsWith(`ygj_free_${getCurrentUser()}`) || e.key === ns('tasks_active') || e.key === ns('tasks_archive'))) renderTasks(); });
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  })();
+  </script>
+</body>
+</html>
