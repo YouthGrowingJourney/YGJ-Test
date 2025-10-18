@@ -1,20 +1,37 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Über uns – YGJ</title>
+  <title>YGJ - About Us</title>
   <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
+
 <body>
+
   <header>
     <a href="index.html" class="home-btn">
-      <img src="https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/home-page-white-icon.png" alt="Home">
+      <img
+        src="https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/home-page-white-icon.png"
+        alt="Home"
+      />
     </a>
+
     <h1>Youth Growing Journey</h1>
+
+    <!-- Wichtig: IDs hinzugefügt für Script-Kompatibilität -->
+    <button id="login-btn" class="btn login-header-btn" onclick="window.location.href='login.html'">
+      <i class="fa-solid fa-right-to-bracket"></i> Log In
+    </button>
+
+    <button id="signup-btn" class="btn" onclick="window.location.href='register.html'">
+      <i class="fa-solid fa-user-plus"></i> Sign Up
+    </button>
+
+    <button id="theme-toggle" class="theme-btn" aria-label="Switch theme">🌙</button>
     <button id="menu-toggle" class="menu-btn">&#9776;</button>
   </header>
 
@@ -22,33 +39,44 @@
     <div class="sidebar-header">
       <button id="close-sidebar" class="close-btn">&times;</button>
     </div>
+
     <div class="sidebar-content">
-      <button onclick="window.location.href='profile.html'"><i class="fa-solid fa-user"></i> Profile</button>
-      <button onclick="window.location.href='about-us.html'"><i class="fa-solid fa-info-circle"></i> About Us</button>
-      <button onclick="window.location.href='contact.html'"><i class="fa-solid fa-envelope"></i> Contact</button>
-      <button onclick="window.location.href='logout.html'"><i class="fa-solid fa-right-from-bracket"></i> Log Out</button>
+      <button onclick="window.location.href='profile.html'">
+        <i class="fa-solid fa-user"></i> Profile
+      </button>
+
+      <button onclick="window.location.href='about-us.html'">
+        <i class="fa-solid fa-info-circle"></i> About Us
+      </button>
+
+      <button onclick="window.location.href='contact.html'">
+        <i class="fa-solid fa-envelope"></i> Contact Us
+      </button>
+
+      <button id="logout-btn">
+        <i class="fa-solid fa-right-from-bracket"></i> Log Out
+      </button>
     </div>
   </div>
-
   <section class="intro">
     <h2>About Us</h2>
-    <p> Youth Growing Journey (YGJ) is more than just a website – it's a movement. We deeply believe, that every human has the potential,
-      to grow, to reach their goals and to become the best version of themselves. 
+    <p>
+      Youth Growing Journey (YGJ) is more than just a website – it's a movement.<br />
+      We deeply believe that every human has the potential to grow, reach their goals,
+      and become the best version of themselves.
     </p>
     <p>
-    YGJ was founded by visionaries, with the intention to unite structure, a strong and wealthy community and siginificant progress. Our goal is, to give you all the tools you need,
-      in order to become the best version of yourself and unlock your true full potential.
+      Founded by young visionaries, YGJ creates structure and community.<br />
+      Our goal is to give you all the tools you need to reach your true potential — no matter where you start.
     </p>
     <p>
-   Whether you're starting your journey with the free plan or the premium plan, our focus is precisely on progress.
+      Whether you're starting for free or joining our premium plan, our focus is always on progress.<br />
+      We're here to walk the path with you.
     </p>
   </section>
-
   <footer>
     &copy; Youth Growing Journey – built for a strong generation.
   </footer>
-
   <script src="script.js"></script>
 </body>
 </html>
-
