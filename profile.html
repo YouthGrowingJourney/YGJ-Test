@@ -1,91 +1,262 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Profile – YGJ (updated)</title>
+  <title>YGJ-Profile</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    /* page-specific styles (kept minimal) */
-    .stat{background:rgba(0,0,0,0.045);padding:12px;border-radius:12px;text-align:center}
+    /* Small page-specific styles for the updated profile page */
+    .intro { max-width:1100px; margin:18px auto; padding:1rem; }
+    .profile-stats { display:grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-top:12px; }
+    .stat { background:rgba(0,0,0,0.045); padding:12px; border-radius:12px; text-align:center; }
+    .stat h3 { margin:0; font-size:1.4rem; }
+    .profile-buttons { margin-top:12px; display:flex; gap:.6rem; }
+    .btn { border-radius:6px; border:0; cursor:pointer; background:#e0c280; color:#fff; }
+    .avatar { width:72px; height:72px; border-radius:12px; object-fit:cover; }
+
+    /* Statistics small chart */
+    .stats-grid { display:grid; grid-template-columns: 1fr 320px; gap:12px; }
+    .chart { width:100%; height:150px; border-radius:8px; padding:8px; background:linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.04)); }
+    table.stats-table { width:100%; border-collapse:collapse; }
+    table.stats-table th, table.stats-table td { padding:8px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; }
+
+    .small { font-size:.92rem; color:#e0c280; }
+
+    body.dark .achievement {
+      background: #444;
+    }
+    /* --- PROFILE LAYOUT RESTRUCTURED --- */
+.profile-card {
+  background: rgba(0,0,0,0.03);
+  border-radius: 14px;
+  padding: 1.2rem 1.4rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  margin-bottom: 18px;
+}
+
+.profile-top {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.profile-info h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #e0c280;
+}
+#profile-info {
+  white-space: pre-wrap;       /* Erlaubt Zeilenumbrüche und erhält manuelle \n */
+  word-wrap: break-word;       /* Bricht Wörter bei zu langen Zeilen */
+  overflow-wrap: break-word;   /* Moderne Alternative zu word-wrap */
+  max-width: 100%;             /* Verhindert Überlauf */
+  line-height: 1.4;            /* Bessere Lesbarkeit */
+}
+.profile-actions {
+  margin-left: auto;
+}
+
+.stats-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin: 1.2rem 0;
+}
+
+.stat-card {
+  background: rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+}
+
+.quick-actions {
+  margin-top: 1.2rem;
+  text-align: center;
+}
+
+.action-buttons {
+  display: flex;
+  gap: .5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: .5rem;
+}
+
+.extra-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 1.6rem;
+}
+
+.panel {
+  background: rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.panel:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.18);
+}
+
+body.dark .profile-card,
+body.dark .panel,
+body.dark .stat-card {
+  background: #444;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+  #profile-info {
+   white-space: pre-wrap;       /* Zeilenumbrüche aus dem Text werden beachtet */
+   word-wrap: break-word;       /* Lange Wörter umbrechen */
+   overflow-wrap: break-word;   /* Moderne Alternative zu word-wrap */
+   max-width: 100%;             /* Kein horizontaler Overflow */
+   line-height: 1.4;            /* Bessere Lesbarkeit */
+}
   </style>
 </head>
 <body>
-  <header>
-    <a href="index.html" class="home-btn" title="Home"><img src="https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/home-page-white-icon.png" alt="Home" style="width:34px"></a>
-    <h1>Youth Growing Journey – Profile</h1>
-    <div style="margin-left:auto; display:flex; gap:.5rem; align-items:center">
-      <button id="login-btn" class="btn login-header-btn" onclick="window.location.href='login.html'">
+   <header>
+    <a href="index.html" class="home-btn">
+      <img
+        src="https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/home-page-white-icon.png" alt="Home"/>
+    </a>
+    <h1>Youth Growing Journey</h1>
+    <button id="login-btn" class="btn login-header-btn" onclick="window.location.href='login.html'">
       <i class="fa-solid fa-right-to-bracket"></i> Log In
     </button>
     <button id="signup-btn" class="btn" onclick="window.location.href='register.html'">
       <i class="fa-solid fa-user-plus"></i> Sign Up
     </button>
-      <button id="theme-toggle" class="theme-btn" aria-label="Switch theme">🌙</button>
-      <button id="menu-toggle" class="menu-btn" aria-label="Open menu">☰</button>
-    </div>
+    <button id="theme-toggle" class="theme-btn" aria-label="Switch theme">🌙</button>
+    <button id="menu-toggle" class="menu-btn">&#9776;</button>
   </header>
 
-  <main class="intro">
-    <div style="display:flex; gap:12px; align-items:center">
+ <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <button id="close-sidebar" class="close-btn">&times;</button>
+    </div>
+
+    <div class="sidebar-content">
+      <button onclick="window.location.href='profile.html'">
+        <i class="fa-solid fa-user"></i> Profile
+      </button>
+
+      <button onclick="window.location.href='about-us.html'" class="active">
+        <i class="fa-solid fa-info-circle"></i> About Us
+      </button>
+
+      <button onclick="window.location.href='contact.html'">
+        <i class="fa-solid fa-envelope"></i> Contact Us
+      </button>
+
+      <button id="logout-btn">
+        <i class="fa-solid fa-right-from-bracket"></i> Log Out
+      </button>
+    </div>
+  </div>
+
+<main class="intro">
+  <!-- PROFILE CARD -->
+  <section class="profile-card" style="max-width: 460px;">
+    <div class="profile-top">
       <img id="profile-avatar" class="avatar" src="https://placehold.co/200x200/png?text=YGJ" alt="Avatar">
-      <div>
+      <div class="profile-info">
         <h2 id="display-name">Guest</h2>
         <p class="small" id="profile-email">Not logged-in</p>
+        <p class="small" id="profile-info"></p>
       </div>
-      <div style="margin-left:auto; display:flex; gap:.6rem;">
-        <button id="edit-profile" class="btn">Edit Profile</button>
-        <button id="view-stats" class="btn">View Statistics</button>
-        <button id="view-achievements" class="btn">View Achievements</button>
-      </div>
-    </div>
-
-    <div class="profile-stats" style="margin-top:16px; display:grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap:12px;">
-      <div class="stat">
-        <h3 id="progress-percentage">0%</h3>
-        <p>Goals Completed</p>
-      </div>
-      <div class="stat">
-        <h3 id="tasks-completed">0</h3>
-        <p>Tasks Completed (all-time)</p>
-      </div>
-      <div class="stat">
-        <h3 id="streak-days">0</h3>
-        <p>Consecutive Days Active</p>
-      </div>
-      <div class="stat">
-        <h3 id="level">1</h3>
-        <p>Level</p>
+      <div class="profile-actions">
+        <button id="edit-profile" class="btn">Edit</button>
       </div>
     </div>
+  </section>
 
-    <div style="margin-top:18px">
-      <h3>Quick Actions</h3>
-      <div style="display:flex; gap:.30rem; margin-left:12px; justify-content: center;">
-        <button id="export-profile" class="btn">Export Profile</button>
-        <button id="reset-progress" class="btn">Reset Progress</button>
-        <button id="goto-free-plan" class="btn">Open Free Plan</button>
-      </div>
+  <!-- STATISTICS GRID -->
+  <section class="stats-section">
+    <div class="stat-card">
+      <h3 id="progress-percentage">0%</h3>
+      <p>Goals Completed</p>
     </div>
+    <div class="stat-card">
+      <h3 id="tasks-completed">0</h3>
+      <p>Tasks Completed</p>
+    </div>
+    <div class="stat-card">
+      <h3 id="streak-days">0</h3>
+      <p>Streak (Days)</p>
+    </div>
+    <div class="stat-card">
+      <h3 id="level">1</h3>
+      <p>Level</p>
+    </div>
+  </section>
 
-  </main>
+  <!-- ACTION BUTTONS -->
+  <section class="quick-actions">
+    <h3>Quick Actions</h3>
+    <div class="action-buttons">
+      <button id="export-profile" class="btn">Export Profile</button>
+      <button id="reset-progress" class="btn">Reset Progress</button>
+      <button id="goto-free-plan" class="btn">Open Free Plan</button>
+    </div>
+  </section>
+
+  <!-- ADDITIONAL PANELS -->
+  <section class="extra-panels">
+    <div class="panel">
+      <h3>Achievements</h3>
+      <p class="small">View your earned badges</p>
+      <button id="view-achievements" class="btn">View</button>
+    </div>
+    <div class="panel">
+      <h3>Statistics</h3>
+      <p class="small">See your progress trends</p>
+      <button id="view-stats" class="btn">Open</button>
+    </div>
+  </section>
+</main>
 
   <footer style="text-align:center; padding:18px; opacity:.8">&copy; Youth Growing Journey</footer>
 
-  <script>
-  (function(){
+  <!-- global shared behaviors (your existing script.js) -->
+  <script src="script.js"></script>
+
+  <!-- Profile-specific logic: this ties the profile page to the Free Plan storage and makes progress "real" -->
+<script>
+// Delegate Logout: funktioniert auf allen Seiten
+document.body.addEventListener("click", (e) => {
+    if (e.target && e.target.id === "logout-btn") {
+        localStorage.removeItem("currentUser");
+        updateNav();
+        alert("You have been logged out.");
+        window.location.href = "index.html";
+    }
+});
+
+(function() {
+    // --- Helpers to access per-user free-plan storage ---
     const getCurrentUser = () => localStorage.getItem('currentUser') || 'guest';
-    const nsFree = (key) => `ygj_free_${getCurrentUser()}_${key}`;
-    const nsProfile = (key) => `ygj_profile_${getCurrentUser()}_${key}`;
+    const nsFree = (key) => `ygj_free_${getCurrentUser()}_${key}`; // matches free-plan keys
+    const nsProfile = (key) => `ygj_profile_${getCurrentUser()}_${key}`; // profile metadata
 
-    // load active tasks and archive
-    function loadActive(){ try { return JSON.parse(localStorage.getItem(nsFree('tasks_active')) || '[]'); } catch(e){ return []; } }
-    function loadArchive(){ try { return JSON.parse(localStorage.getItem(nsFree('tasks_archive')) || '[]'); } catch(e){ return []; } }
-    function loadStreak(){ try { return JSON.parse(localStorage.getItem(nsFree('streak')) || '{"count":0,"last":""}'); } catch(e){ return { count:0, last: '' }; } }
-
+    // UI elements
     const elDisplayName = document.getElementById('display-name');
     const elEmail = document.getElementById('profile-email');
     const elAvatar = document.getElementById('profile-avatar');
@@ -93,69 +264,300 @@
     const elTasksDone = document.getElementById('tasks-completed');
     const elStreak = document.getElementById('streak-days');
     const elLevel = document.getElementById('level');
+    const elInfo = document.getElementById('profile-info');
 
-    function loadProfileMeta(){ try { return JSON.parse(localStorage.getItem(nsProfile('meta')) || '{}'); } catch(e){ return {}; } }
-
-    function computeKPIs(){
-      const active = loadActive(); const archive = loadArchive();
-      const totalActive = active.length;
-      // all-time done: count of done items in active + archive
-      const doneActive = active.filter(t=>t.done).length;
-      const doneArchived = archive.filter(t=>t.done).length;
-      const doneAll = doneActive + doneArchived;
-      // progress for profile: percentage of active tasks done OR if no active tasks, base on all-time (fallback)
-      const progress = totalActive ? Math.round((doneActive / totalActive) * 100) : (doneAll ? 100 : 0);
-      const streak = loadStreak().count || 0;
-      const level = Math.max(1, Math.floor(progress/20) + 1);
-      return { totalActive, doneAll, progress, streak, level };
+    function loadStreak() {
+        try { return JSON.parse(localStorage.getItem(nsFree('streak')) || '{"count":0,"last":""}'); }
+        catch (e) { return { count:0, last: '' }; }
     }
 
-    function renderProfile(){
-      const user = getCurrentUser(); const meta = loadProfileMeta();
-      elDisplayName.textContent = meta.displayName || (user==='guest' ? 'Guest' : user);
-      elEmail.textContent = meta.email || (user==='guest' ? 'Not logged in' : meta.email || '—');
-      elAvatar.src = meta.avatar || elAvatar.src;
-      const k = computeKPIs();
-      elProgress.textContent = k.progress + '%'; elTasksDone.textContent = k.doneAll; elStreak.textContent = k.streak; elLevel.textContent = k.level;
+    function saveStreak(obj) { localStorage.setItem(nsFree('streak'), JSON.stringify(obj)); }
+
+    function loadProfile() {
+        try { return JSON.parse(localStorage.getItem(nsProfile('meta')) || '{}'); }
+        catch { return {}; }
     }
 
-    // edit profile, achievements, stats similar to earlier - omitted for brevity but keep same UX
-    document.getElementById('goto-free-plan').addEventListener('click', ()=> window.location.href = 'free-plan.html');
+    // ========== KPI-Statistik aus Free Plan übernehmen ==========
+    function ns(key) { return `ygj_${key}`; }
 
-    document.getElementById('reset-progress').addEventListener('click', ()=>{
-      if (!confirm('Are you sure? This will remove active tasks and clear the archive and reset streak.')) return;
-      localStorage.removeItem(nsFree('tasks_active')); localStorage.removeItem(nsFree('tasks_archive')); localStorage.removeItem(nsFree('streak'));
-      renderProfile(); alert('Resetted progress - Keep going!');
-    });
+    // =====================
+    // TASKS + HISTORY HANDLING
+    // =====================
+    function loadTasks() {
+        try { return JSON.parse(localStorage.getItem(nsFree('tasks')) || '[]'); }
+        catch (e) { return []; }
+    }
 
-    document.getElementById('export-profile').addEventListener('click', ()=>{
-      const payload = { meta: loadProfileMeta(), kpis: computeKPIs(), active: loadActive(), archive: loadArchive(), ts: Date.now() };
-      const blob = new Blob([JSON.stringify(payload,null,2)], { type: 'application/json' }); const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = `ygj_profile_${getCurrentUser()}.json`; a.click(); URL.revokeObjectURL(u);
-    });
+    function saveTasks(tasks) {
+        localStorage.setItem(nsFree('tasks'), JSON.stringify(tasks));
+    }
 
-    // edit profile modal
-    document.getElementById('edit-profile').addEventListener('click', ()=>{
-      const meta = loadProfileMeta(); const modal = document.createElement('div'); modal.className='modal-overlay'; modal.innerHTML = `
+    function loadCompletedHistory() {
+        try { return JSON.parse(localStorage.getItem(nsFree('completedHistory')) || '[]'); }
+        catch (e) { return []; }
+    }
+
+    function saveCompletedHistory(history) {
+        localStorage.setItem(nsFree('completedHistory'), JSON.stringify(history));
+    }
+
+    function normalizeTasksWithHistory() {
+        let tasks = loadTasks();
+        let history = loadCompletedHistory();
+        let changed = false;
+
+        const archivedIds = new Set(history.map(h => h.id));
+
+        tasks.forEach(t => {
+            if (t.done && !t.doneAt) {
+                t.doneAt = Date.now();
+                changed = true;
+            }
+        });
+
+        tasks.filter(t => t.done && !archivedIds.has(t.id))
+             .forEach(t => history.push({ ...t, archivedAt: Date.now() }));
+
+        saveCompletedHistory(history);
+        if (changed) saveTasks(tasks);
+
+        return { tasks, history };
+    }
+
+    // =====================
+    // KPI-Berechnung
+    // =====================
+    function computeKPIs() {
+        const { tasks, history } = normalizeTasksWithHistory();
+        const total = tasks.length + history.length;
+        const done = tasks.filter(t => t.done).length + history.length;
+        const progress = total ? Math.round((done / total) * 100) : 0;
+        const streak = loadStreak().count || 0;
+        const level = Math.max(1, Math.floor(progress / 20) + 1);
+
+        return { total, done, progress, streak, level, tasks };
+    }
+
+    // =====================
+    // RENDER PROFILE
+    // =====================
+    function renderProfile() {
+        const user = getCurrentUser();
+        const profile = loadProfile();
+        elDisplayName.textContent = profile.displayName || (user === 'guest' ? 'Guest' : user);
+        elEmail.textContent = profile.email || (user === 'guest' ? 'Not logged in' : profile.email || '—');
+        elAvatar.src = profile.avatar || elAvatar.src;
+        elInfo.innerHTML = (profile.info || (user === 'guest' ? 'No Info' : '-'))
+                    .replace(/\n/g, '<br>');
+
+        const k = computeKPIs();
+        elProgress.textContent = k.progress + '%';
+        elTasksDone.textContent = k.done;
+        elStreak.textContent = k.streak;
+        elLevel.textContent = k.level;
+        elProgress.setAttribute('aria-valuenow', k.progress);
+    }
+
+    // --- Edit Profile Modal ---
+    function openEditProfile() {
+        const existing = loadProfile();
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
         <div class="modal-content">
-          <h3>Edit Profile</h3>
-          <label>Display Name<br><input id="mf-name" value="${meta.displayName||''}" style="width:100%"></label>
-          <label>Email<br><input id="mf-email" value="${meta.email||''}" style="width:100%"></label>
-          <label>Avatar URL<br><input id="mf-avatar" value="${meta.avatar||''}" style="width:100%"></label>
-          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px"><button id="mf-cancel" class="btn">Cancel</button><button id="mf-save" class="btn">Save</button></div>
+            <h3>Edit Profile</h3>
+            <div style="display:flex; gap:12px; align-items:center; margin-top:8px">
+                <img id="modal-avatar-preview" src="${existing.avatar || elAvatar.src}" alt="avatar" style="width:84px;height:84px;border-radius:10px;object-fit:cover">
+                <div style="flex:1">
+                    <label class="small acc">Display Name (max. 20 characters)<br><input id="modal-displayname" type="text" maxlength="20" style="width:100%; padding:.4rem; margin-top:6px; border-radius:8px; border: solid 1.5px #e0c280;" value="${existing.displayName || ''}"></label>
+                    <label class="small acc">Email (optional)<br><input id="modal-email" type="email" style="width:100%; padding:.4rem; margin-top:6px; border-radius:8px; border: solid 1.5px #e0c280;" value="${existing.email || ''}"></label>
+                    <label class="small acc">Avatar (URL)<br><input id="modal-avatar" type="url" style="width:100%; padding:.4rem; margin-top:6px; border-radius:8px; border: solid 1.5px #e0c280;" value="${existing.avatar || ''}"></label>
+                    <label class="small acc">Info (max. 200 characters)<br><textarea id="modal-info" maxlength="200" rows="4" style="width:100%; padding:.4rem; margin-top:6px; border-radius:8px; border: solid 1.5px #e0c280; resize:vertical;">${existing.info || ''}</textarea>
+
+                </div>
+            </div>
+            <div style="display:flex; gap:.6rem; justify-content:flex-end; margin-top:12px">
+                <button id="modal-cancel" class="btn">Cancel</button>
+                <button id="modal-save" class="btn">Save</button>
+            </div>
         </div>`;
-      document.body.appendChild(modal);
-      modal.querySelector('#mf-cancel').addEventListener('click', ()=> modal.remove());
-      modal.querySelector('#mf-save').addEventListener('click', ()=>{
-        const newMeta = { displayName: modal.querySelector('#mf-name').value.trim(), email: modal.querySelector('#mf-email').value.trim(), avatar: modal.querySelector('#mf-avatar').value.trim() };
-        localStorage.setItem(nsProfile('meta'), JSON.stringify(newMeta)); renderProfile(); modal.remove();
-      });
+        document.body.appendChild(modal);
+
+        modal.querySelector('#modal-cancel').addEventListener('click', () => modal.remove());
+        modal.querySelector('#modal-save').addEventListener('click', () => {
+            const newMeta = {
+                displayName: modal.querySelector('#modal-displayname').value.trim() || existing.displayName || getCurrentUser(),
+                email: modal.querySelector('#modal-email').value.trim() || existing.email || '',
+                avatar: modal.querySelector('#modal-avatar').value.trim() || existing.avatar || elAvatar.src,
+                info: modal.querySelector('#modal-info').value.trim() || existing.info || ''
+            };
+            localStorage.setItem(nsProfile('meta'), JSON.stringify(newMeta));
+            renderProfile();
+            modal.remove();
+        });
+
+        modal.querySelector('#modal-avatar').addEventListener('input', (e) => {
+            modal.querySelector('#modal-avatar-preview').src = e.target.value || elAvatar.src;
+        });
+    }
+
+    // =====================
+    // MODALS: Achievements & Stats
+    // =====================
+    function openAchievements() {
+        const k = computeKPIs();
+        const tasks = k.tasks;
+        const ach = [];
+        if (tasks.length > 0) ach.push({ id:'first-task', title:'First Task', desc:'You added your first task.' });
+        if (k.done >= 1) ach.push({ id:'first-done', title:'First Completion', desc:'You completed your first task — nice!' });
+        if (k.streak >= 7) ach.push({ id:'7-day-streak', title:'7-day Streak', desc:'You kept going one whole week!' });
+        if (k.done >= 30) ach.push({ id:'30-done', title:'30 Tasks Done', desc:'30 tasks completed — consistent work!' });
+
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+        <div class="modal-content">
+            <h3>Achievements</h3>
+            <p class="small">Earned badges based on your activity.</p>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap:8px; margin-top:12px">
+                ${ach.length ? ach.map(a => `<div class="achievement" style="border-radius:8px;padding:10px;background:#f7f7f7"><strong>${a.title}</strong><div class="small">${a.desc}</div></div>`).join('') : '<div class="small">No achievements yet. Keep grinding!</div>'}
+            </div>
+            <div style="display:flex; justify-content:flex-end; margin-top:12px"><button id="ach-close" class="btn">Close</button></div>
+        </div>`;
+        document.body.appendChild(modal);
+        modal.querySelector('#ach-close').addEventListener('click', () => modal.remove());
+    }
+
+    function openStatistics() {
+        const k = computeKPIs();
+        const tasks = k.tasks;
+        const days = 7; const counts = new Array(days).fill(0);
+        const labels = new Array(days).fill(0).map((_,i)=>{
+            const d = new Date(); d.setDate(d.getDate() - (days-1-i));
+            return d.toISOString().slice(0,10).slice(5);
+        });
+
+        tasks.forEach(t => {
+            if (t.done) {
+                const ts = t.doneAt || t.createdAt || Date.now();
+                const d = new Date(ts).toISOString().slice(0,10);
+                for (let i=0;i<days;i++){
+                    const dCheck = new Date(); dCheck.setDate(dCheck.getDate() - (days-1-i));
+                    if (d === dCheck.toISOString().slice(0,10)) counts[i]++;
+                }
+            }
+        });
+
+        const max = Math.max(1, ...counts);
+        const bars = counts.map(c => `<div style="flex:1; display:flex; flex-direction:column; align-items:center"><div style="height:${Math.round((c/max)*110)}px; width:22px; background:#3cc2ff; border-radius:6px"></div><div style="margin-top:6px; font-size:11px">${c}</div></div>`).join('');
+
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+        <div class="modal-content">
+            <h3>Statistics</h3>
+            <div class="stats-grid" style="margin-top:8px">
+                <div>
+                    <p class="small">Total tasks: <strong>${k.total}</strong></p>
+                    <p class="small">Completed: <strong>${k.done}</strong></p>
+                    <p class="small">Completion rate: <strong>${k.progress}%</strong></p>
+                    <p class="small">Current streak: <strong>${k.streak} days</strong></p>
+                    <p class="small">Level: <strong>${k.level}</strong></p>
+                    <div style="margin-top:8px">
+                        <button id="stats-export-json" class="btn">Export Stats (JSON)</button>
+                        <button id="stats-close" class="btn">Close</button>
+                    </div>
+                </div>
+                <div style="padding:8px">
+                    <div style="display:flex; gap:6px; align-items:flex-end; height:140px;">
+                        ${bars}
+                    </div>
+                    <div style="display:flex; gap:6px; margin-top:8px; justify-content:space-between; font-size:11px; color:#555">${labels.map(l=>`<div style="width:22px;text-align:center">${l}</div>`).join('')}</div>
+                </div>
+            </div>
+        </div>`;
+        document.body.appendChild(modal);
+
+        modal.querySelector('#stats-close').addEventListener('click', () => modal.remove());
+        modal.querySelector('#stats-export-json').addEventListener('click', () => {
+            const payload = { meta: loadProfile(), kpis: { total:k.total, done:k.done, progress:k.progress, streak:k.streak, level:k.level }, tasks: tasks };
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `ygj_profile_${getCurrentUser()}_stats.json`; a.click(); URL.revokeObjectURL(url);
+        });
+    }
+
+    // =====================
+    // Small UX actions
+    // =====================
+    document.getElementById('edit-profile').addEventListener('click', openEditProfile);
+    document.getElementById('view-achievements').addEventListener('click', openAchievements);
+    document.getElementById('view-stats').addEventListener('click', openStatistics);
+    document.getElementById('goto-free-plan').addEventListener('click', () => window.location.href = 'free-plan.html');
+
+    document.getElementById('export-profile').addEventListener('click', () => {
+        const payload = { profile: loadProfile(), kpis: (() => { const k = computeKPIs(); return { total:k.total, done:k.done, progress:k.progress, streak:k.streak, level:k.level }; })(), ts: Date.now() };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = `ygj_profile_${getCurrentUser()}.json`; a.click(); URL.revokeObjectURL(u);
     });
 
-    // achievements/stats could reuse old modals, but they should draw from computeKPIs(); omitted here for brevity
+    document.getElementById('reset-progress').addEventListener('click', () => {
+        if (!confirm('Are you sure? Your streak will be reset!')) return;
+        localStorage.removeItem(nsFree('tasks'));
+        localStorage.removeItem(nsFree('streak'));
+        renderProfile();
+        alert('Resetted progress - Keep going!');
+    });
 
-    window.addEventListener('storage', (e)=>{ if (e.key && e.key.startsWith(`ygj_free_${getCurrentUser()}`)) renderProfile(); });
+    const menuToggle = document.getElementById('menu-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const closeSidebar = document.getElementById('close-sidebar');
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', () => sidebar.style.display = 'block');
+        if (closeSidebar) closeSidebar.addEventListener('click', () => sidebar.style.display = 'none');
+    }
+
+    // Initial render
     renderProfile();
-  })();
-  </script>
+
+    // Also update whenever storage changes in other tabs
+    window.addEventListener('storage', (e) => {
+        if (e.key && (e.key.startsWith(`ygj_free_${getCurrentUser()}`) || e.key === nsProfile('meta'))) renderProfile();
+    });
+
+})(); 
+</script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
