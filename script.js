@@ -136,7 +136,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const currentUser = localStorage.getItem("currentUser");
         if (!currentUser || currentUser === "null") {
           window.location.href = "login.html";
-        ;
         }
       });
 
@@ -173,27 +172,81 @@ document.addEventListener("DOMContentLoaded", () => {
 
  // Delegate Logout: funktioniert auf allen Seiten
 document.body.addEventListener("click", (e) => {
-    if (e.target && e.target.id === "logout-btn") {
-        localStorage.removeItem("currentUser");
-        updateNav();
-        alert("You have been logged out.");
+  if (e.target && e.target.id === "logout-btn") {
+    // === unverändert: ausloggen + UI updaten ===
+    localStorage.removeItem("currentUser");
+    updateNav();
+
+    // === Modal anzeigen (anstelle des blockierenden alert + sofort-redirect) ===
+    // Falls schon ein Modal offen ist, nichts tun
+    if (document.querySelector('.modal-overlay')) return;
+
+    const modal = document.createElement('div');
+    modal.classList.add('modal-overlay');
+
+    modal.innerHTML = `
+      <div class="modal-content" role="dialog" aria-modal="true" aria-label="Logged out">
+        <p><i class="fa-solid fa-door-open"></i> You have been logged out successfully.</p>
+        <button class="close-modal-btn btn" type="button">OK</button>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Klick auf OK -> Modal schließen und dann redirect (wie vorher)
+    const okBtn = modal.querySelector('.close-modal-btn');
+    okBtn.addEventListener('click', () => {
+      modal.remove();
+      // genau wie vorher: weiterleiten
+      window.location.href = "index.html";
+    });
+
+    // Optional: Klick auf Overlay schließt ebenfalls und redirect (UX-freundlich)
+    modal.addEventListener('click', (ev) => {
+      if (ev.target === modal) {
+        modal.remove();
         window.location.href = "index.html";
-    }
+      }
+    });
+
+    // Optional: Escape key schließt ebenfalls
+    const onEsc = (ev) => {
+      if (ev.key === "Escape") {
+        document.removeEventListener('keydown', onEsc);
+        if (modal.parentElement) {
+          modal.remove();
+          window.location.href = "index.html";
+        }
+      }
+    };
+    document.addEventListener('keydown', onEsc);
+
+    // --- wichtig: KEIN alert() mehr hier ---
+    // alert("You have been logged out.");
+    // window.location.href = "index.html";
+  }
 });
-
   updateNav();
-
   /* ============================
      LOGIN (page-specific)
      ============================ */
   const loginSubmit = document.getElementById("login-submit");
   if (loginSubmit) {
     loginSubmit.addEventListener("click", () => {
-      const username = document.getElementById("login-username").value.trim();
-      const password = document.getElementById("login-password").value.trim();
+      // guard element retrieval to avoid null .value access
+      const usernameEl = document.getElementById("login-username");
+      const passwordEl = document.getElementById("login-password");
+      const msg = document.getElementById("login-message");
+
+      if (!usernameEl || !passwordEl || !msg) {
+        console.warn("Login handler: missing input or message element on this page.");
+        return;
+      }
+
+      const username = usernameEl.value.trim();
+      const password = passwordEl.value.trim();
       const users = JSON.parse(localStorage.getItem("users") || "[]");
       const user = users.find(u => u.username === username && u.password === password);
-      const msg = document.getElementById("login-message");
 
       if (user) {
         localStorage.setItem("currentUser", username);
@@ -225,11 +278,22 @@ document.body.addEventListener("click", (e) => {
 const registerSubmit = document.getElementById("register-submit");
 if (registerSubmit) {
   registerSubmit.addEventListener("click", () => {
-    const username = document.getElementById("new-username").value.trim();
-    const email = document.getElementById("new-email").value.trim();
-    const password = document.getElementById("new-password").value.trim();
-    const confirmPassword = document.getElementById("new-password-confirm").value.trim();
+    // guard element retrieval to avoid null .value access
+    const usernameEl = document.getElementById("new-username");
+    const emailEl = document.getElementById("new-email");
+    const passwordEl = document.getElementById("new-password");
+    const confirmEl = document.getElementById("new-password-confirm");
     const msg = document.getElementById("register-message");
+
+    if (!usernameEl || !emailEl || !passwordEl || !confirmEl || !msg) {
+      console.warn("Register handler: missing input or message element on this page.");
+      return;
+    }
+
+    const username = usernameEl.value.trim();
+    const email = emailEl.value.trim();
+    const password = passwordEl.value.trim();
+    const confirmPassword = confirmEl.value.trim();
 
     // Basic validation
     if (!username || !email || !password || !confirmPassword) {
@@ -256,17 +320,27 @@ if (registerSubmit) {
     // Load existing users
     let users = JSON.parse(localStorage.getItem("users") || "[]");
 
-    // Check if username or email already exists
-    if (users.find(u => u.username === username)) {
-      msg.textContent = "Username already taken!";
-      msg.style.color = "#f00";
-      return;
-    }
-    if (users.find(u => u.email === email)) {
-      msg.textContent = "Email already registered!";
-      msg.style.color = "#f00";
-      return;
-    }
+   // Check if username or email already exists
+const usernameExists = users.find(u => u.username === username);
+const emailExists = users.find(u => u.email === email);
+
+if (usernameExists || emailExists) {
+  // Rote Fehlermeldung mit kurzer "Aufleucht"-Animation
+  let msgText = "";
+  if (usernameExists) msgText += "Username is already taken ";
+  if (emailExists) msgText += "E-Mail already in use";
+
+  msg.textContent = msgText;
+  msg.style.display = "block";
+  msg.style.color = "#f00";
+  msg.style.fontWeight = "bold";
+  msg.style.transition = "opacity 0.4s ease";
+  msg.style.opacity = "1";
+
+  // sanftes Aufleuchten
+  msg.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 400, iterations: 1 });
+  return;
+}
 
     // Add new user
     users.push({ username, email, password });
@@ -297,11 +371,6 @@ if (registerSubmit) {
     } else {
       profileUsername.textContent = currentUser;
 
-      const progress = Math.floor(Math.random() * 100);
-      const tasks = Math.floor(Math.random() * 50) + 1;
-      const streak = Math.floor(Math.random() * 30);
-      const level = Math.floor(progress / 20) + 1;
-
       const pProgress = document.getElementById("progress-percentage");
       const pTasks = document.getElementById("tasks-completed");
       const pStreak = document.getElementById("streak-days");
@@ -316,15 +385,7 @@ if (registerSubmit) {
   /* ============================
      Optional: small page-specific button handlers
      ============================ */
-  const editProfileBtn = document.getElementById("edit-profile");
-  if (editProfileBtn) {
-    editProfileBtn.addEventListener("click", () => alert("Editing profile feature coming soon!"));
-  }
 
-  const viewAchievementsBtn = document.getElementById("view-achievements");
-  if (viewAchievementsBtn) {
-    viewAchievementsBtn.addEventListener("click", () => alert("Achievements page coming soon!"));
-  }
 
   /* ============================
      Trigger an event to notify others that theme is ready
@@ -333,6 +394,3 @@ if (registerSubmit) {
   window.dispatchEvent(new CustomEvent('ygj:themeloaded', { detail: { theme: body.classList.contains('dark') ? 'dark' : 'light' } }));
 
 }); // DOMContentLoaded end
-
-
-
