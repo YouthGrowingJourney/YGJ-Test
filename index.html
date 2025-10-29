@@ -3,86 +3,137 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>YGJ-Home</title>
+  <title>YGJ - Home</title>
+
+  <!-- Fonts & Styles -->
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
+
+  <!-- HEADER -->
   <header>
-    <a href="https://youthgrowingjourney.github.io/YGJ/index.html" class="home-btn">
+    <a href="index.html" class="home-btn">
       <img src="https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/home-page-white-icon.png" alt="Home">
     </a>
     <h1>Youth Growing Journey</h1>
-   <!-- Login Button -->
-<button id="login-btn" class="btn login-header-btn" onclick="window.location.href='login.html'">
-  <i class="fa-solid fa-right-to-bracket"></i> Log In
-</button>
-<!-- Sign Up Button -->
-<button id="signup-btn" class="btn" onclick="window.location.href='register.html'">
-  <i class="fa-solid fa-user-plus"></i> Sign Up
-</button>   
-<button id="theme-toggle" class="theme-btn" aria-label="Switch theme">🌙</button>
-<!-- Menü Button -->
-<button id="menu-toggle" class="menu-btn">&#9776;</button>
+
+    <button id="login-btn" class="btn login-header-btn" onclick="window.location.href='login.html'">
+      <i class="fa-solid fa-right-to-bracket"></i> Log In
+    </button>
+
+    <button id="signup-btn" class="btn" onclick="window.location.href='register.html'">
+      <i class="fa-solid fa-user-plus"></i> Sign Up
+    </button>
+
+    <button id="theme-toggle" class="theme-btn" aria-label="Switch theme">🌙</button>
+    <button id="menu-toggle" class="menu-btn">&#9776;</button>
   </header>
-<div class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <button id="close-sidebar" class="close-btn">&times;</button>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <button id="close-sidebar" class="close-btn">&times;</button>
+    </div>
+    <div class="sidebar-content">
+      <button onclick="window.location.href='profile.html'">
+        <i class="fa-solid fa-user"></i> Profile
+      </button>
+      <button onclick="window.location.href='about-us.html'">
+        <i class="fa-solid fa-info-circle"></i> About Us
+      </button>
+      <button onclick="window.location.href='contact.html'">
+        <i class="fa-solid fa-envelope"></i> Contact Us
+      </button>
+      <button id="logout-btn">
+        <i class="fa-solid fa-right-from-bracket"></i> Log Out
+      </button>
+    </div>
   </div>
-<div class="sidebar-content">
-  <button onclick="window.location.href='profile.html'">
-    <i class="fa-solid fa-user"></i> Profile
-  </button>
-  <button onclick="window.location.href='about-us.html'">
-    <i class="fa-solid fa-info-circle"></i> About Us
-  </button>
-  <button onclick="window.location.href='contact.html'">
-    <i class="fa-solid fa-envelope"></i> Contact Us
-  </button>
-  <button id="logout-btn">
-    <i class="fa-solid fa-right-from-bracket"></i> Log Out
-  </button>
-</div>
-</div>
-  <section class="intro">
-   <p>Motivation, Planning and Success – everything at one spot. Learn and experience free Growing-Basics and start your journey!</p>
-    <div class="buttons">
-     <button onclick="window.location.href='free-plan.html'" class="btn">Start free now</button>
-    <button class="btn">Premium available soon</button>
-   </div>
-  </section>
+
+  <!-- MAIN CONTENT -->
+  <main class="home-container">
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+      <h2>Grow Strong. Think Big. Never Stop.</h2>
+      <p>Motivation, discipline, and success – everything at one spot. <br>
+      Start your journey and become the best version of yourself.</p>
+
+      <div class="hero-buttons">
+        <button onclick="window.location.href='free-plan.html'" class="btn">
+          <i class="fa-solid fa-rocket"></i> Start Free
+        </button>
+        <button class="btn disabled">
+          <i class="fa-solid fa-gem"></i> Premium Coming Soon
+        </button>
+      </div>
+    </section>
+
+    <!-- VALUES SECTION -->
+    <section class="values">
+      <h3>Our Core Values</h3>
+      <div class="values-grid">
+        <div class="value-card">
+          <i class="fa-solid fa-fire"></i>
+          <h4>Ambition</h4>
+          <p>Every day is a new chance to grow. Keep the fire burning and move forward no matter what.</p>
+        </div>
+        <div class="value-card">
+          <i class="fa-solid fa-chart-line"></i>
+          <h4>Growth</h4>
+          <p>We believe in structured improvement. Step by step, improve your life massively.</p>
+        </div>
+        <div class="value-card">
+          <i class="fa-solid fa-dumbbell"></i>
+          <h4>Discipline</h4>
+          <p>Discipline beats motivation. Do it anyway, keep showing up.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PREMIUM PREVIEW -->
+    <section class="premium-preview">
+      <h3>Premium – Coming Soon</h3>
+      <p>We’re building something extraordinary for those who want more. <br>
+         Exclusive content, advanced plans, and global community features await you.</p>
+      <div class="premium-card">
+        <i class="fa-solid fa-crown"></i>
+        <h4>YGJ Premium</h4>
+        <p>Unlock the full potential of your growth journey. Stay tuned for updates.</p>
+      </div>
+    </section>
+
+    <!-- COMMUNITY CTA -->
+    <section class="cta">
+      <h3>Join the Movement</h3>
+      <p>Start for free, learn, grow, and connect with others who chase greatness.</p>
+      <button class="btn" onclick="window.location.href='register.html'">
+        <i class="fa-solid fa-arrow-right"></i> Join YGJ Now
+      </button>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
   <footer>
-    &copy; Youth Growing Journey – built for a strong generation.
+    &copy; 2025 Youth Growing Journey – built for a strong generation.
   </footer>
-<script src="script.js"></script>
+
+  <!-- SCRIPTS -->
+  <script src="script.js"></script>
   <script>
-     // Delegate Logout: funktioniert auf allen Seiten
-document.body.addEventListener("click", (e) => {
+  // Global Logout Handling
+  document.body.addEventListener("click", (e) => {
     if (e.target && e.target.id === "logout-btn") {
-        localStorage.removeItem("currentUser");
-        updateNav();
-        alert("You have been logged out.");
-        window.location.href = "index.html";
+      localStorage.removeItem("currentUser");
+      updateNav && updateNav();
+      alert("You have been logged out.");
+      window.location.href = "index.html";
     }
-});
+  });
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
