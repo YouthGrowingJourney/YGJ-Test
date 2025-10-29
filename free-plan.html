@@ -3,39 +3,145 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title> YGJ-Free Plan</title>
+  <title>Free Plan – YGJ</title>
+  <!-- Reuse your global style + fonts + icons -->
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <!-- jsPDF for client-side PDF export -->
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <style>
-    /* keep same styles as before; omitted here for brevity in this in-file example */
-    main { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
-    .card{background:rgba(255,255,255,0.06);border-radius:16px;padding:1rem}
-    /* modal */
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:1200}
-    .modal-content{background:#fff;padding:1rem;border-radius:12px;max-width:800px;width:94%;}
+    /* Page-specific polish that sits on top of your style.css */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+    .card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
+      padding: 1rem 1.2rem;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    .card h2 { margin-top: 0; font-size: 1.2rem; }
+    .muted { opacity: .85; }
+    .kpi {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; margin-top: .5rem;
+    }
+    .kpi .chip {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px; padding: .75rem; text-align: center;
+    }
+    .tasks-controls { display: flex; gap: .5rem; margin-top: .5rem; }
+    #task-input { flex: 1; padding: .55rem .7rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.15); color: inherit; }
+    #task-list { list-style: none; padding: 0; margin: .75rem 0 0; }
+    #task-list li {
+      display: grid; grid-template-columns: auto 1fr auto auto; align-items: center;
+      gap: .6rem; padding: .55rem .6rem; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04);
+    }
+    #task-list li.done .task-text { text-decoration: line-through; opacity: .6; }
+    .icon-btn { background: none; border: none; color: inherit; cursor: pointer; padding: .3rem .4rem; border-radius: 8px; }
+    .icon-btn:hover { background: rgba(255,255,255,0.08); }
+    .progress-bar-wrap { height: 10px; background: rgba(255,255,255,0.12); border-radius: 999px; overflow: hidden; }
+    .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #58ffa1, #3cc2ff); }
+    .chip.badge { display:inline-flex; align-items:center; gap:.4rem; padding:.35rem .6rem; font-size:.9rem; }
+    .template-btns { display:flex; flex-wrap: wrap; gap:.5rem; margin-top:.5rem; }
+    .template-btns .btn { padding:.35rem .6rem; font-size:.9rem; }
+    .section-actions { display:flex; gap:.6rem; flex-wrap:wrap; }
+    .notice { font-size:.95rem; opacity:.8; }
+    .divider { height:1px; background: rgba(255,255,255,0.1); margin: 1rem 0; }
+    .pdf-note { font-size:.9rem; opacity:.85; margin-top:.35rem; }
+    .modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+}
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  max-width: 300px;
+  box-shadow: 0 0 20px #e0c280;
+  color: #e0c280;
+}
+.modal-content p {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+/* Animation (optional, für Premium-Vibe) */
+@keyframes modal-pop {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+body.dark .modal-content {
+  background: #333;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  max-width: 300px;
+  box-shadow: 0 0 20px #e0c280;
+  color: #fff;
+}
   </style>
 </head>
 <body>
+  <!-- Header (keeps visual consistency with your site) -->
   <header>
     <a href="index.html" class="home-btn" title="Home">
       <img src="https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/home-page-white-icon.png" alt="Home">
     </a>
     <h1>Youth Growing Journey – Free Plan</h1>
-    <button id="theme-toggle" class="theme-btn" aria-label="Switch theme" style="margin-right: 10px; padding: 10px 12px 12px 12px">🌙</button>
+   <button id="theme-toggle" class="theme-btn" aria-label="Switch theme" style="margin-right: 10px; padding: 10px 12px 12px 12px">🌙</button>
     <button id="menu-toggle" class="menu-btn" aria-label="Open menu">&#9776;</button>
   </header>
 
+  <!-- Sidebar (same structure as elsewhere) -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <button id="close-sidebar" class="close-btn" aria-label="Close sidebar">&times;</button>
+    </div>
+    <div class="sidebar-content">
+      <button onclick="window.location.href='profile.html'">
+        <i class="fa-solid fa-user"></i> Profile
+      </button>
+      <button onclick="window.location.href='about-us.html'">
+        <i class="fa-solid fa-info-circle"></i> About Us
+      </button>
+      <button onclick="window.location.href='contact.html'">
+        <i class="fa-solid fa-envelope"></i> Contact Us
+      </button>
+      <button id="logout-btn">
+        <i class="fa-solid fa-right-from-bracket"></i> Log Out
+      </button>
+    </div>
+  </div>
+
   <main>
-    <!-- ... hero and KPI area unchanged ... -->
+    <!-- Hero / Value Proposition -->
     <section class="card" aria-labelledby="hero-title">
       <h2 id="hero-title">Kickstart your growth – for free</h2>
       <p class="muted">Daily inspiration, simple tracking, and clean progress exports. Build habits, stack wins, and keep moving forward.</p>
       <div class="kpi">
-        <div class="chip"><strong id="kpi-tasks">0</strong><div class="muted">Tasks (active)</div></div>
-        <div class="chip"><strong id="kpi-done">0</strong><div class="muted">Done (all-time)</div></div>
+        <div class="chip"><strong id="kpi-tasks">0</strong><div class="muted">Tasks</div></div>
+        <div class="chip"><strong id="kpi-done">0</strong><div class="muted">Done</div></div>
         <div class="chip"><strong id="kpi-streak">0</strong><div class="muted">Day Streak</div></div>
         <div class="chip"><strong id="kpi-progress">0%</strong><div class="muted">Progress</div></div>
       </div>
@@ -61,10 +167,6 @@
           <button id="add-task" class="btn"><i class="fa-solid fa-plus"></i> Add</button>
         </div>
         <ul id="task-list"></ul>
-        <div style="margin-top:.6rem; display:flex; gap:.5rem; align-items:center">
-          <button id="view-archive" class="btn"><i class="fa-solid fa-box-archive"></i> View Archive</button>
-          <button id="clear-completed" class="btn"><i class="fa-solid fa-broom"></i> Clean Completed (archive)</button>
-        </div>
         <div class="divider"></div>
         <div class="progress-bar-wrap" aria-label="Progress">
           <div id="progress-bar" class="progress-bar"></div>
@@ -77,12 +179,12 @@
         <h2 id="export-title"><i class="fa-solid fa-file-export"></i>Downloads</h2>
         <p class="muted">Save your current tasks, completion status, and streak as a personal PDF.</p>
         <div class="section-actions">
-          <button id="export-pdf" class="btn"><i class="fa-solid fa-file-pdf"></i> Export my progress (PDF)</button>
+          <button id="export-pdf" class="btn"><i class="fa-solid fa-file-pdf"></i> Export progress</button>
         </div>
-        <p class="pdf-note">Want a free guided starter PDF with instructions and routines? <br>
+        <p class="muted">Want a Free-Guided Starter-Tutorial with Instructions and Routines?</p>
+        <p class="pdf-note">The YGJ Free Plan Is A Small Book With Basic Methods To Improve Your Life. It's A Completely Free Download Without Ads. <br>
           <button id="download-guide" class="btn" style="margin-top:.5rem"><i class="fa-solid fa-download"></i> Download YGJ Free Plan</button>
         </p>
-        <p class="muted">The YGJ Free Plan Is A Small Book With Basic Method To Improve Your Life. It Is An Completely Free Download Without Ads.</p>
       </section>
     </div>
   </main>
@@ -91,70 +193,92 @@
     &copy; Youth Growing Journey – Free Plan
   </footer>
 
+  <!-- Reuse your global script for shared behaviors -->
+  <script src="script.js"></script>
+
+  <!-- Page-specific logic kept isolated to avoid conflicts -->
   <script>
-  (function(){
-    // Namespacing and compatibility migration
+     document.addEventListener("DOMContentLoaded", () => {
+    const currentUser = localStorage.getItem("currentUser");
+    if (!currentUser || currentUser === "null") {
+      alert("⚠️You have to log-in to use the Free-Plan!");
+      window.location.href = "login.html";
+    }
+  });
+  (function() {
+    // ---------- Helpers & Storage Namespacing ----------
     const getCurrentUser = () => localStorage.getItem('currentUser') || 'guest';
-    const ns = (key) => `ygj_free_${getCurrentUser()}_${key}`; // per-user
+    const ns = (key) => `ygj_free_${getCurrentUser()}_${key}`; // per-user if logged in, else guest
 
-    // New storage structure keys:
-    // - ns('tasks_active') => active tasks array
-    // - ns('tasks_archive') => archived tasks (completed/removed)
-    // Backwards compatibility: if ns('tasks') exists and tasks_active missing, migrate it
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
-    function migrateIfNeeded(){
-      const rawOld = localStorage.getItem(ns('tasks'));
-      const activeKey = ns('tasks_active');
-      const archiveKey = ns('tasks_archive');
-      if (localStorage.getItem(activeKey)) return; // already migrated/using new keys
-      if (rawOld) {
-        try {
-          const arr = JSON.parse(rawOld || '[]');
-          // ensure doneAt for completed
-          const migrated = arr.map(t => ({ ...t, doneAt: t.done ? (t.doneAt || t.createdAt || Date.now()) : undefined }));
-          localStorage.setItem(activeKey, JSON.stringify(migrated));
-          localStorage.setItem(archiveKey, JSON.stringify([]));
-          // keep the old key as backup (do not delete) to avoid accidental data loss
-          console.info('YGJ: Migrated old tasks -> tasks_active + tasks_archive');
-        } catch(e){ console.warn('YGJ: migration failed', e); }
-      } else {
-        localStorage.setItem(activeKey, JSON.stringify([]));
-        localStorage.setItem(archiveKey, JSON.stringify([]));
-      }
+    const quoteEl = $('#daily-quote');
+    const kpiTasks = $('#kpi-tasks');
+    const kpiDone = $('#kpi-done');
+    const kpiStreak = $('#kpi-streak');
+    const kpiProgress = $('#kpi-progress');
+    const progressLabel = $('#progress');
+    const progressBar = $('#progress-bar');
+    const checkinStatus = $('#checkin-status');
+
+    const quotes = [
+    "Imagination is more important than knowledge. For knowledge is limited. ~Albert Einstein",
+    "When something is important enough, you do it even if the odds are not in your favor. ~Elon Musk",
+    "The people who are crazy enough to think they can change the world are the ones who do. ~ Steve Jobs",
+    "If you can dream it, you can do it. ~Walt Disney",
+    "Courage isn’t having the strength to go on – it is going on when you don’t have strength. ~ Napoleon Bonaparte",
+    "The difference between successful people and really successful people is that really successful people say no to almost everything. ~Warren Buffett",
+    "Whether you think you can, or you think you can’t – you’re right. ~Henry Ford",
+    "We cannot solve our problems with the same thinking we used when we created them. ~ Albert Einstein",
+    "The secret of change is to focus all of your energy, not on fighting the old, but on building the new. ~Socrates",
+    "You have power over your mind – not outside events. Realize this, and you will find strength. ~Marcus Aurelius",
+    "In the midst of chaos, there is also opportunity. ~Sun Tzu",
+    "If you double the number of experiments you do per year, you’re going to double your inventiveness. ~Jeff Bezos",
+    "As I grow older, I pay less attention to what men say. I just watch what they do. ~Andrew Carnegie",
+    "Don’t be afraid to give up the good to go for the great. ~John D. Rockefeller",
+    "Business opportunities are like buses, there’s always another one coming. ~Richard Branson",
+    "There is nothing impossible to him who will try. ~Alexander the Great", 
+    "If you must break the law, do it to seize power; in all other cases observe it. ~Julius Caesar", 
+    "It is better to be feared than loved, if you cannot be both. ~Niccolò Machiavelli", 
+    "Success is not final, failure is not fatal: it is the courage to continue that counts. ~Winston Churchill", 
+    "We are what we repeatedly do. Excellence, then, is not an act, but a habit. ~Aristotle", 
+    "It does not matter how slowly you go as long as you do not stop. ~Confucius", 
+    "He who has a why to live can bear almost any how. ~Friedrich Nietzsche", 
+    "A journey of a thousand miles begins with a single step. ~Lao Tzu", 
+    "I hated every minute of training, but I said, ‘Don’t quit. Suffer now and live the rest of your life as a champion.’ ~Muhammad Ali", 
+    "The most important thing is to try and inspire people so that they can be great in whatever they want to do. ~Kobe Bryant", 
+    "Discipline is doing what you hate to do, but doing it like you love it. ~Mike Tyson",
+    "Motivation is crap. Motivation comes and goes. When you’re driven, whatever is in front of you will get destroyed. ~David Goggins",
+    "I don’t care that they stole my idea... I care that they don’t have any of their own. ~Nikola Tesla", 
+    "It’s fine to celebrate success, but it is more important to heed the lessons of failure. ~Bill Gates", 
+    "Always deliver more than expected. ~Larry Page", 
+    "If you don’t give up, you still have a chance. Giving up is the greatest failure. ~Jack Ma",
+    "Do the hard work, especially when you don't feel like it. ~Hamza Ahmed"
+    ];
+
+    function randomQuote() {
+      const q = quotes[Math.floor(Math.random() * quotes.length)];
+      quoteEl.textContent = q;
     }
 
-    // Helpers
-    function loadActiveTasks(){ try { return JSON.parse(localStorage.getItem(ns('tasks_active')) || '[]'); } catch(e){ return []; } }
-    function saveActiveTasks(tasks){ localStorage.setItem(ns('tasks_active'), JSON.stringify(tasks)); updateKPIs(); }
-    function loadArchive(){ try { return JSON.parse(localStorage.getItem(ns('tasks_archive')) || '[]'); } catch(e){ return []; } }
-    function saveArchive(arr){ localStorage.setItem(ns('tasks_archive'), JSON.stringify(arr)); }
+    // ---------- Tasks State ----------
+    function loadTasks() {
+      try { return JSON.parse(localStorage.getItem(ns('tasks')) || '[]'); }
+      catch { return []; }
+    }
+    function saveTasks(tasks) {
+      localStorage.setItem(ns('tasks'), JSON.stringify(tasks));
+      updateKPIs(tasks);
+    }
 
-    // UI refs
-    const quoteEl = document.getElementById('daily-quote');
-    const kpiTasks = document.getElementById('kpi-tasks');
-    const kpiDone = document.getElementById('kpi-done');
-    const kpiStreak = document.getElementById('kpi-streak');
-    const kpiProgress = document.getElementById('kpi-progress');
-    const progressLabel = document.getElementById('progress');
-    const progressBar = document.getElementById('progress-bar');
-    const checkinStatus = document.getElementById('checkin-status');
-
-    // Quotes (same as before) - shortened here for brevity
-    const quotes = [
-      "If you don’t give up, you still have a chance. Giving up is the greatest failure. ~Jack Ma",
-      "We are what we repeatedly do. Excellence, then, is not an act, but a habit. ~Aristotle",
-      "Discipline is doing what you hate to do, but doing it like you love it. ~Mike Tyson",
-      "Motivation is crap. Motivation comes and goes. When you’re driven, whatever is in front of you will get destroyed. ~David Goggins"
-    ];
-    function randomQuote(){ quoteEl.textContent = quotes[Math.floor(Math.random()*quotes.length)]; }
-
-    // Task rendering
-    function renderTasks(){
-      const list = document.getElementById('task-list');
-      const tasks = loadActiveTasks();
+    function renderTasks() {
+      const list = $('#task-list');
+      const tasks = loadTasks();
       list.innerHTML = '';
-      tasks.forEach((t,i)=>{
-        const li = document.createElement('li'); li.dataset.index = i;
+      tasks.forEach((t, i) => {
+        const li = document.createElement('li');
+        li.dataset.index = i;
         if (t.done) li.classList.add('done');
         li.innerHTML = `
           <input type="checkbox" ${t.done ? 'checked' : ''} aria-label="Toggle done" />
@@ -168,193 +292,284 @@
         list.appendChild(li);
       });
       attachTaskHandlers();
-      updateKPIs();
+      updateKPIs(tasks);
     }
 
-    function attachTaskHandlers(){
-      document.querySelectorAll('#task-list li').forEach(li=>{
+    function attachTaskHandlers() {
+      $$('#task-list li').forEach(li => {
         const idx = +li.dataset.index;
-        li.querySelector('input[type="checkbox"]').addEventListener('change', ()=> toggleDone(idx));
-        li.querySelector('.remove').addEventListener('click', ()=> removeTask(idx));
-        li.querySelector('.move-up').addEventListener('click', ()=> moveTask(idx, -1));
-        li.querySelector('.move-down').addEventListener('click', ()=> moveTask(idx, +1));
+        li.querySelector('input[type="checkbox"]').addEventListener('change', () => toggleDone(idx));
+        li.querySelector('.remove').addEventListener('click', () => removeTask(idx));
+        li.querySelector('.move-up').addEventListener('click', () => moveTask(idx, -1));
+        li.querySelector('.move-down').addEventListener('click', () => moveTask(idx, +1));
       });
     }
 
-    function addTask(text){
-      if (!text || !text.trim()) return;
-      const tasks = loadActiveTasks();
+    function addTask(text) {
+      const tasks = loadTasks();
+      if (!text || text.trim() === '') return;
       tasks.push({ text: text.trim(), done: false, createdAt: Date.now() });
-      saveActiveTasks(tasks); renderTasks();
+      saveTasks(tasks);
+      renderTasks();
     }
 
-    function toggleDone(index){
-      const tasks = loadActiveTasks(); if (!tasks[index]) return;
+    function toggleDone(index) {
+      const tasks = loadTasks();
+      if (!tasks[index]) return;
       tasks[index].done = !tasks[index].done;
-      if (tasks[index].done) tasks[index].doneAt = tasks[index].doneAt || Date.now(); else delete tasks[index].doneAt;
-      // trigger check-in when a task is marked done
+      // Auto check-in on first completion of the day (optional)
       if (tasks[index].done) doCheckIn();
-      saveActiveTasks(tasks); renderTasks();
+      saveTasks(tasks);
+      renderTasks();
     }
 
-    // When removing a task: if it's done -> archive it (preserve history). If it's pending -> ask to archive or delete.
-    function removeTask(index){
-      const tasks = loadActiveTasks(); if (!tasks[index]) return;
-      const t = tasks[index];
-      if (t.done) {
-        // Move to archive
-        const arch = loadArchive();
-        arch.unshift({ ...t, removedAt: Date.now() });
-        saveArchive(arch);
-        tasks.splice(index, 1);
-        saveActiveTasks(tasks); renderTasks();
+    function removeTask(index) {
+      const tasks = loadTasks();
+      tasks.splice(index, 1);
+      saveTasks(tasks);
+      renderTasks();
+    }
+function removeTask(index) {
+  const tasks = loadTasks();
+  const task = tasks[index];
+  
+  // Wenn die Task erledigt war → in History speichern
+  if (task && task.done) archiveTask(task);
+  
+  // Danach aus der aktuellen Liste löschen
+  tasks.splice(index, 1);
+  saveTasks(tasks);
+  renderTasks();
+}
+
+   function updateKPIs(tasks) {
+  const history = loadCompletedHistory();
+  const total = tasks.length;
+  const done = tasks.filter(t => t.done).length + history.length; // erledigte + archivierte
+  const progress = total ? Math.round((done / (total + history.length)) * 100) : 100;
+
+  kpiTasks.textContent = total + history.length;
+  kpiDone.textContent = done;
+  kpiProgress.textContent = progress + '%';
+  progressLabel.textContent = progress + '%';
+  progressBar.style.width = progress + '%';
+}
+    // ========== HISTORIC TRACKING SYSTEM ==========
+// Lädt archivierte erledigte Tasks
+function loadCompletedHistory() {
+  try { return JSON.parse(localStorage.getItem(ns('completedHistory')) || '[]'); }
+  catch { return []; }
+}
+// Speichert archivierte erledigte Tasks
+function saveCompletedHistory(history) {
+  localStorage.setItem(ns('completedHistory'), JSON.stringify(history));
+}
+// Fügt erledigten Task zur History hinzu
+function archiveTask(task) {
+  const history = loadCompletedHistory();
+  // Doppelte Einträge vermeiden (z. B. wenn man eine alte Task neu hinzufügt)
+  if (!history.find(h => h.text === task.text && h.doneAt === task.doneAt)) {
+    task.doneAt = task.doneAt || Date.now();
+    history.push(task);
+    saveCompletedHistory(history);
+  }
+}
+    function escapeHtml(s) {
+      return s.replace(/[&<>"]+/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    }
+
+    // ---------- Streak / Check-in ----------
+   // === YGJ – Streak System mit Modal ===
+
+// Holt Streak aus localStorage
+function getStreak() {
+  try {
+    return JSON.parse(localStorage.getItem(ns('streak')) || '{"count":0,"last":""}');
+  } catch {
+    return { count: 0, last: '' };
+  }
+}
+
+// Speichert Streak
+function saveStreak(obj) {
+  localStorage.setItem(ns('streak'), JSON.stringify(obj));
+}
+
+// Formatiert Datum (YYYY-MM-DD)
+function formatDate(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+// Check-In durchführen
+function doCheckIn() {
+  const today = formatDate(new Date());
+  const s = getStreak();
+  if (s.last === today) return; // bereits heute eingecheckt
+
+  const yesterday = formatDate(new Date(Date.now() - 86400000));
+  const nextCount = (s.last === yesterday) ? s.count + 1 : 1;
+  const updated = { count: nextCount, last: today };
+
+  saveStreak(updated);
+  reflectStreak(updated);
+
+  // Modal anzeigen nach erfolgreichem Check-In
+  showCheckInModal(updated.count);
+}
+
+// Aktualisiert die Anzeige des Streaks
+function reflectStreak(s) {
+  kpiStreak.textContent = s.count;
+  if (s.last === formatDate(new Date())) {
+    checkinStatus.innerHTML = '<i class="fa-solid fa-circle-check"></i> Checked in today';
+  } else {
+    checkinStatus.innerHTML = '<i class="fa-solid fa-calendar-day"></i> Not checked in';
+  }
+}
+
+// === YGJ Modal Design ===
+function showCheckInModal(count) {
+  // Falls schon ein Modal offen ist → nicht doppelt öffnen
+  if (document.querySelector('.modal-overlay')) return;
+
+  const modal = document.createElement('div');
+  modal.classList.add('modal-overlay');
+
+  modal.innerHTML = `
+    <div class="modal-content">
+      <p><i class="fa-solid fa-fire"></i> Great job! You’ve checked in for <b>${count}</b> day${count > 1 ? 's' : ''} in a row 🔥</p>
+      <button class="close-modal-btn btn">OK</button>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // Schließen bei Klick
+  modal.querySelector('.close-modal-btn').addEventListener('click', () => {
+    modal.remove();
+  });
+}
+
+// === Initialisierung ===
+document.addEventListener('DOMContentLoaded', () => {
+  const s = getStreak();
+  reflectStreak(s);
+
+  const checkInBtn = document.getElementById('check-in');
+  if (checkInBtn) checkInBtn.addEventListener('click', doCheckIn);
+});
+
+    // ---------- Export PDF ----------
+    function exportPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const margin = 12;
+      let y = margin;
+
+      const title = 'YGJ – Free Plan Progress';
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
+      doc.text(title, margin, y);
+      y += 8;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      const user = getCurrentUser();
+      const dateStr = new Date().toLocaleString();
+      doc.text(`User: ${user}`, margin, y); y += 6;
+      doc.text(`Exported: ${dateStr}`, margin, y); y += 10;
+
+      // KPIs
+      const tasks = loadTasks();
+      const total = tasks.length;
+      const done = tasks.filter(t => t.done).length;
+      const progress = total ? Math.round((done/total)*100) : 0;
+      const streak = getStreak().count;
+
+      doc.setFont('helvetica','bold');
+      doc.text('Overview', margin, y); y += 7;
+      doc.setFont('helvetica','normal');
+      doc.text(`Tasks: ${total}`, margin, y); y += 6;
+      doc.text(`Done: ${done}`, margin, y); y += 6;
+      doc.text(`Progress: ${progress}%`, margin, y); y += 6;
+      doc.text(`Day Streak: ${streak}`, margin, y); y += 10;
+
+      // Task List
+      doc.setFont('helvetica','bold');
+      doc.text('Your Tasks', margin, y); y += 7;
+      doc.setFont('helvetica','normal');
+      if (tasks.length === 0) {
+        doc.text('No tasks yet. Add some and crush them!', margin, y); y += 6;
       } else {
-        // pending task: ask user whether to delete or archive
-        const proceed = confirm('This task is not completed. Do you want to archive it instead of deleting? Press OK to archive, Cancel to permanently delete.');
-        if (proceed) {
-          const arch = loadArchive();
-          arch.unshift({ ...t, removedAt: Date.now(), archivedAsPending: true });
-          saveArchive(arch);
-        }
-        tasks.splice(index, 1);
-        saveActiveTasks(tasks); renderTasks();
-      }
-    }
-
-    function moveTask(index, dir){
-      const tasks = loadActiveTasks(); const newIndex = index + dir; if (newIndex<0||newIndex>=tasks.length) return;
-      const [item] = tasks.splice(index,1); tasks.splice(newIndex,0,item); saveActiveTasks(tasks); renderTasks();
-    }
-
-    function escapeHtml(s){ return String(s||'').replace(/[&<>\"]+/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-
-    // ---------- KPIs & Streak (unchanged logic but now includes archive for done count) ----------
-    function loadStreak(){ try { return JSON.parse(localStorage.getItem(ns('streak')) || '{"count":0,"last":""}'); } catch(e){ return { count:0, last: '' }; } }
-    function saveStreak(obj){ localStorage.setItem(ns('streak'), JSON.stringify(obj)); }
-    function formatDate(d){ return d.toISOString().slice(0,10); }
-    function doCheckIn(){
-      const today = formatDate(new Date()); const s = loadStreak(); if (s.last === today) return; const yesterday = formatDate(new Date(Date.now()-86400000)); const nextCount = (s.last===yesterday) ? s.count+1 : 1; const updated = { count: nextCount, last: today }; saveStreak(updated); reflectStreak(updated);
-    }
-    function reflectStreak(s){ kpiStreak.textContent = s.count; if (s.last === formatDate(new Date())) checkinStatus.innerHTML = '<i class="fa-solid fa-circle-check"></i> Checked in today'; else checkinStatus.innerHTML = '<i class="fa-solid fa-calendar-day"></i> Not checked in'; }
-
-    function updateKPIs(){
-      const active = loadActiveTasks(); const archive = loadArchive();
-      const totalActive = active.length;
-      // done all-time = done in active + done in archive
-      const doneActive = active.filter(t=>t.done).length;
-      const doneArchived = archive.filter(t=>t.done).length;
-      const doneAllTime = doneActive + doneArchived;
-      const progress = totalActive ? Math.round((doneActive / totalActive) * 100) : 0; // progress pertains to active list
-      kpiTasks.textContent = totalActive;
-      kpiDone.textContent = doneAllTime;
-      kpiProgress.textContent = progress + '%';
-      progressLabel.textContent = progress + '%';
-      progressBar.style.width = progress + '%';
-    }
-
-    // ---------- Archive Modal UI ----------
-    function openArchiveModal(){
-      const archive = loadArchive();
-      const modal = document.createElement('div'); modal.className = 'modal-overlay';
-      const content = document.createElement('div'); content.className = 'modal-content';
-      content.innerHTML = `<h3>Archive</h3><p class="small">Your archived tasks (completed or removed). They stay here so statistics reflect your progress.</p>`;
-      const listWrap = document.createElement('div'); listWrap.style.maxHeight = '55vh'; listWrap.style.overflow = 'auto'; listWrap.style.marginTop = '8px';
-      if (!archive.length) listWrap.innerHTML = '<div class="small">Archive is empty.</div>';
-      else {
-        archive.forEach((a,i)=>{
-          const row = document.createElement('div'); row.style.display='flex'; row.style.gap='8px'; row.style.alignItems='center'; row.style.padding='8px'; row.style.borderBottom='1px solid #eee';
-          row.innerHTML = `<div style="flex:1"><strong>${escapeHtml(a.text)}</strong><div style="font-size:12px;color:#666">${a.done?('Done at: '+new Date(a.doneAt).toLocaleString()):'Not completed'}${a.removedAt?(' • removed: '+new Date(a.removedAt).toLocaleString()):''}</div></div>`;
-          const btns = document.createElement('div'); btns.style.display='flex'; btns.style.gap='6px';
-          const restore = document.createElement('button'); restore.className='btn'; restore.textContent='Restore'; restore.addEventListener('click', ()=>{
-            // restore to active (unshift)
-            const active = loadActiveTasks(); active.unshift({ text: a.text, done: !!a.done, createdAt: a.createdAt || Date.now(), doneAt: a.doneAt });
-            saveActiveTasks(active);
-            // remove from archive
-            const arch2 = loadArchive(); arch2.splice(i,1); saveArchive(arch2);
-            modal.remove(); renderTasks();
-          });
-          const del = document.createElement('button'); del.className='btn'; del.textContent='Delete'; del.addEventListener('click', ()=>{
-            if (!confirm('Permanently delete this archived item? This cannot be undone.')) return; const arch2 = loadArchive(); arch2.splice(i,1); saveArchive(arch2); modal.remove(); openArchiveModal();
-          });
-          btns.appendChild(restore); btns.appendChild(del); row.appendChild(btns); listWrap.appendChild(row);
+        tasks.forEach((t, i) => {
+          const line = `${i+1}. ${t.text} — ${t.done ? 'Done' : 'Pending'}`;
+          // Wrap text if necessary
+          const lines = doc.splitTextToSize(line, 180);
+          lines.forEach(ln => { doc.text(ln, margin, y); y += 6; });
+          if (y > 280) { doc.addPage(); y = margin; }
         });
       }
-      content.appendChild(listWrap);
-      const footer = document.createElement('div'); footer.style.display='flex'; footer.style.justifyContent='flex-end'; footer.style.gap='8px'; footer.style.marginTop='12px';
-      const close = document.createElement('button'); close.className='btn'; close.textContent='Close'; close.addEventListener('click', ()=> modal.remove());
-      const clearAll = document.createElement('button'); clearAll.className='btn'; clearAll.textContent='Permanently Clear All'; clearAll.addEventListener('click', ()=>{
-        if (!confirm('Permanently delete ALL archived items? This cannot be undone.')) return; localStorage.setItem(ns('tasks_archive'),'[]'); modal.remove(); renderTasks();
-      });
-      footer.appendChild(clearAll); footer.appendChild(close); content.appendChild(footer);
-      modal.appendChild(content); document.body.appendChild(modal);
-    }
 
-    // Clear completed active tasks into archive (helper)
-    function cleanCompletedToArchive(){
-      const tasks = loadActiveTasks(); const arch = loadArchive();
-      const remaining = [];
-      tasks.forEach(t=>{
-        if (t.done){ arch.unshift({ ...t, removedAt: Date.now() }); }
-        else remaining.push(t);
-      });
-      saveArchive(arch); saveActiveTasks(remaining); renderTasks();
-      alert('Completed tasks moved to archive. They will still count for your all-time stats.');
-    }
+      // Footer note
+      if (y > 260) { doc.addPage(); y = margin; }
+      y += 6;
+      doc.setFontSize(10);
+      doc.text('Keep showing up. Small steps, daily.', margin, y);
 
-    // ---------- Export PDF (includes archived counts) ----------
-    function exportPDF(){
-      const { jsPDF } = window.jspdf; const doc = new jsPDF(); const margin = 12; let y = margin;
-      doc.setFontSize(18); doc.text('YGJ – Free Plan Progress', margin, y); y+=8; doc.setFontSize(11);
-      const user = getCurrentUser(); doc.text(`User: ${user}`, margin, y); y+=6; doc.text(`Exported: ${new Date().toLocaleString()}`, margin, y); y+=10;
-      const active = loadActiveTasks(); const archive = loadArchive();
-      const totalActive = active.length; const doneActive = active.filter(t=>t.done).length; const doneArchived = archive.filter(t=>t.done).length; const doneAll = doneActive + doneArchived; const streak = loadStreak().count || 0;
-
-      doc.setFontSize(12); doc.text('Overview', margin, y); y+=7; doc.setFontSize(11);
-      doc.text(`Active tasks: ${totalActive}`, margin, y); y+=6; doc.text(`Done (active): ${doneActive}`, margin, y); y+=6; doc.text(`Done (archived/all-time): ${doneArchived}`, margin, y); y+=6; doc.text(`Done (all-time): ${doneAll}`, margin, y); y+=6; doc.text(`Day Streak: ${streak}`, margin, y); y+=10;
-
-      doc.text('Active Task List', margin, y); y+=7; if (!active.length){ doc.text('No active tasks.', margin, y); y+=6; } else {
-        active.forEach((t,i)=>{ const line = `${i+1}. ${t.text} — ${t.done ? 'Done' : 'Pending'}`; const lines = doc.splitTextToSize(line,180); lines.forEach(ln=>{ doc.text(ln, margin, y); y+=6; }); if (y>280){ doc.addPage(); y=margin; } });
-      }
-      // Archived summary (first 20 items)
-      if (y>240){ doc.addPage(); y=margin; }
-      doc.text('Archived (most recent)', margin, y); y+=7;
-      if (!archive.length) { doc.text('Archive empty.', margin, y); y+=6; }
-      else {
-        const slice = archive.slice(0,20);
-        slice.forEach((a,idx)=>{
-          const when = a.doneAt ? new Date(a.doneAt).toLocaleDateString() : (a.removedAt?new Date(a.removedAt).toLocaleDateString():'');
-          const line = `${idx+1}. ${a.text} — ${a.done ? 'Done' : (a.archivedAsPending ? 'Archived (pending)' : 'Removed')}${when ? ' • ' + when : ''}`;
-          const lines = doc.splitTextToSize(line,180); lines.forEach(ln=>{ doc.text(ln, margin, y); y+=6; }); if (y>280){ doc.addPage(); y=margin; }
-        });
-      }
-      if (y>260) { doc.addPage(); y=margin; }
-      doc.setFontSize(10); doc.text('Keep showing up. Small steps, daily.', margin, y);
       doc.save('ygj_free_plan_progress.pdf');
     }
 
-    // ---------- Guide download (same fallback) ----------
-    async function downloadGuide(){ const url = 'assets/ygj_free_plan.pdf'; try { const res = await fetch(url,{method:'HEAD'}); if (!res.ok) throw new Error('missing'); window.location.href = url; } catch(e){ alert('The YGJ Free Plan PDF will be available soon. Add your file at "assets/ygj_free_plan.pdf" to enable this button.'); } }
+    // ---------- Guide Download (static PDF you will add later) ----------
+    async function downloadGuide() {
+      // Expected path for your own authored PDF; change if you prefer
+      const url = 'assets/ygj_free_plan.pdf';
+      try {
+        const res = await fetch(url, { method: 'HEAD' });
+        if (!res.ok) throw new Error('missing');
+        window.location.href = url; // start download
+      } catch (e) {
+        // Soft fallback if the file isn’t uploaded yet
+        alert('The YGJ Free Plan PDF will be available soon. Add your file at \n"assets/ygj_free_plan.pdf" to enable this button.');
+      }
+    }
 
-    // ---------- UI wiring ----------
-    function bindUI(){
-      document.getElementById('new-quote').addEventListener('click', randomQuote);
-      document.getElementById('check-in').addEventListener('click', ()=>{ doCheckIn(); alert('Nice! You checked in for today. Keep the streak alive.'); });
-      document.getElementById('add-task').addEventListener('click', ()=>{ const val = document.getElementById('task-input').value.trim(); addTask(val); document.getElementById('task-input').value=''; document.getElementById('task-input').focus(); });
-      document.getElementById('task-input').addEventListener('keydown', (e)=>{ if (e.key==='Enter'){ e.preventDefault(); document.getElementById('add-task').click(); } });
-      document.getElementById('view-archive').addEventListener('click', openArchiveModal);
-      document.getElementById('clear-completed').addEventListener('click', cleanCompletedToArchive);
-      document.getElementById('export-pdf').addEventListener('click', exportPDF);
-      document.getElementById('download-guide').addEventListener('click', downloadGuide);
+    // ---------- Wire up UI ----------
+    function bindUI() {
+      $('#new-quote').addEventListener('click', randomQuote);
+      $('#check-in').addEventListener('click', () => { doCheckIn(); alert('Nice! You checked in for today. Keep the streak alive.'); });
+
+      $('#add-task').addEventListener('click', () => {
+        const val = $('#task-input').value.trim();
+        addTask(val);
+        $('#task-input').value = '';
+        $('#task-input').focus();
+      });
+      $('#task-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); $('#add-task').click(); }
+      });
+
+      $$('.template').forEach(btn => btn.addEventListener('click', () => addTask(btn.dataset.text)));
+
+      $('#export-pdf').addEventListener('click', exportPDF);
+      $('#download-guide').addEventListener('click', downloadGuide);
     }
 
     // ---------- Init ----------
-    function init(){
-      migrateIfNeeded(); randomQuote(); renderTasks(); reflectStreak(loadStreak()); bindUI();
-      // listen for cross-tab updates
-      window.addEventListener('storage', (e)=>{ if (e.key && (e.key.startsWith(`ygj_free_${getCurrentUser()}`) || e.key === ns('tasks_active') || e.key === ns('tasks_archive'))) renderTasks(); });
+    function init() {
+      // Quote
+      randomQuote();
+      // Tasks & KPIs
+      renderTasks();
+      // Streak
+      reflectStreak(getStreak());
+      // UI
+      bindUI();
     }
 
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+    // Run when DOM is ready (this script is at the end, so DOM is ready). Still safe-guarding.
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else { init(); }
   })();
   </script>
 </body>
