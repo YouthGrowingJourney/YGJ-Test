@@ -3,27 +3,102 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>YGJ-Contact</title>
+  <title>YGJ – Contact</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    /* Zusätzliche Styles für das Kontaktformular */
+    .contact-container {
+      max-width: 700px;
+      margin: 50px auto;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(8px);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .contact-container h2 {
+      text-align: center;
+      color: #e0c280;
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+
+    .contact-container p {
+      text-align: center;
+      color: #ccc;
+      margin-bottom: 30px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    input, textarea {
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      font-size: 1em;
+      width: 100%;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    }
+
+    input {
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    textarea {
+      min-height: 120px;
+      background: rgba(255, 255, 255, 0.9);
+      resize: vertical;
+    }
+
+    button[type="submit"] {
+      background: linear-gradient(90deg, #e0c280, #c0a060);
+      color: #000;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button[type="submit"]:hover {
+      transform: scale(1.05);
+      background: linear-gradient(90deg, #f0d290, #e0b070);
+    }
+
+    .status {
+      text-align: center;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .success {
+      color: #4caf50;
+    }
+
+    .error {
+      color: #ff4d4d;
+    }
+  </style>
 </head>
 
 <body>
-
   <header>
     <a href="index.html" class="home-btn">
-      <img
-        src="https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/home-page-white-icon.png"
-        alt="Home"
-      />
+      <img src="https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/home-page-white-icon.png" alt="Home" />
     </a>
-
     <h1>Youth Growing Journey</h1>
 
-    <!-- Wichtig: IDs für Script-Kompatibilität -->
-    <button id="login-btn" class="btn login-header-btn" onclick="window.location.href='login.html'"> 
+    <button id="login-btn" class="btn login-header-btn" onclick="window.location.href='login.html'">
       <i class="fa-solid fa-right-to-bracket"></i> Log In
     </button>
 
@@ -34,43 +109,67 @@
     <button id="theme-toggle" class="theme-btn" aria-label="Switch theme">🌙</button>
     <button id="menu-toggle" class="menu-btn">&#9776;</button>
   </header>
-  
+
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <button id="close-sidebar" class="close-btn">&times;</button>
     </div>
-
     <div class="sidebar-content">
-      <button onclick="window.location.href='profile.html'">
-        <i class="fa-solid fa-user"></i> Profile
-      </button>
-
-      <button onclick="window.location.href='about-us.html'">
-        <i class="fa-solid fa-info-circle"></i> About Us
-      </button>
-
-      <button onclick="window.location.href='contact.html'">
-        <i class="fa-solid fa-envelope"></i> Contact Us
-      </button>
-
-      <button id="logout-btn">
-        <i class="fa-solid fa-right-from-bracket"></i> Log Out
-      </button>
+      <button onclick="window.location.href='profile.html'"><i class="fa-solid fa-user"></i> Profile</button>
+      <button onclick="window.location.href='about-us.html'"><i class="fa-solid fa-info-circle"></i> About Us</button>
+      <button onclick="window.location.href='contact.html'"><i class="fa-solid fa-envelope"></i> Contact Us</button>
+      <button id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Log Out</button>
     </div>
   </div>
-  <section class="intro">
-    <h2>Contact</h2>
-    <p>
-      You have any questions, feedback or just want to tell us something?<br />
-      Then just write us an email!
-    </p>
-    <p>
-      📧 <a href="mailto:ygjbusiness25@gmail.com" style="color: #e0c280; text-decoration: underline;">ygjbusiness25@gmail.com</a>
-    </p>
+
+  <!-- Kontaktformular -->
+  <section class="contact-container">
+    <h2>Contact Us</h2>
+    <p>Have questions, feedback, or just want to say hello? Fill out the form below, and we’ll get back to you!</p>
+
+    <form id="contact-form">
+      <input type="text" name="from_name" placeholder="Your Name" required />
+      <input type="email" name="from_email" placeholder="Your Email" required />
+      <input type="text" name="subject" placeholder="Subject" required />
+      <textarea name="message" placeholder="Your Message" required></textarea>
+      <button type="submit">Send Message</button>
+      <div id="status" class="status"></div>
+    </form>
   </section>
+
   <footer>
     &copy; Youth Growing Journey – built for a strong generation.
   </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="script.js"></script>
+  <script>
+    // EmailJS initialisieren
+    (function() {
+      emailjs.init("ODSOg03RHLWny7u13"); // <-- hier kommt dein Public Key rein
+    })();
+
+    const form = document.getElementById("contact-form");
+    const statusDiv = document.getElementById("status");
+
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+      statusDiv.textContent = "Sending...";
+      statusDiv.className = "status";
+
+      emailjs.sendForm("service_63275pl", "template_coe299a", this)
+        .then(() => {
+          statusDiv.textContent = "✅ Message sent successfully!";
+          statusDiv.classList.add("success");
+          form.reset();
+        }, (error) => {
+          console.error(error);
+          statusDiv.textContent = "❌ Failed to send. Please try again later.";
+          statusDiv.classList.add("error");
+        });
+    });
+  </script>
 </body>
 </html>
+
+
