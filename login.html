@@ -3,11 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login – YGJ</title>
+  <title>YGJ-Log-In</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    /* Kleine, sichere Ergänzungen für bessere Form-Optik (überschreibt nichts Wichtiges) */
+    .intro { max-width: 420px; margin: 36px auto; padding: 20px; border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,0.08); background: rgba(255,255,255,0.02); }
+    .intro h2 { margin-bottom: 16px; font-size: 1.6rem; }
+    .login-input, .input-group input { width: 100%; padding: 10px 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; font-size: 1rem; box-sizing: border-box; }
+    .form-row { display:flex; gap:10px; align-items:center; margin-top:8px; }
+    .btn { cursor:pointer; padding: 10px 20px; border-radius:6px; border: none; background: #e0c280; color: #fff; }
+    #login-message { min-height: 22px; margin-top: 10px; font-weight: 700; transition: opacity .3s ease; }
+    .aux-actions { margin-top: 8px; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .link-like { background: none; border: none; color: inherit; text-decoration: underline; cursor: pointer; padding:0; font-size:0.95rem; }
+    .remember-checkbox { display:flex; align-items:center; gap:6px; font-size:0.95rem; }
+    @media (max-width:480px){ .intro{ margin: 20px; padding:16px;} }
+  </style>
 </head>
 <body>
   <header>
@@ -15,36 +28,52 @@
       <img src="https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/home-page-white-icon.png" alt="Home">
     </a>
     <h1>Youth Growing Journey</h1>
-       <button class="btn login-header-btn" onclick="window.location.href='login.html'">
-    <i class="fa-solid fa-right-to-bracket"></i> Log In
-   </button>
-     <button class="btn" onclick="window.location.href='register.html'"><i class="fa-solid fa-user-plus"></i> Sign Up</button>
-     <button id="theme-toggle" class="theme-btn" aria-label="Switch theme" style="margin-right: 10px; padding: 10px 12px 12px 12px;">🌙</button>
+    <button class="btn login-header-btn" onclick="window.location.href='login.html'">
+      <i class="fa-solid fa-right-to-bracket"></i> Log In
+    </button>
+    <button class="btn" onclick="window.location.href='register.html'"><i class="fa-solid fa-user-plus"></i> Sign Up</button>
+    <button id="theme-toggle" class="theme-btn" aria-label="Switch theme" style="margin-right: 10px; padding: 10px 12px 12px 12px;">🌙</button>
     <button id="menu-toggle" class="menu-btn">&#9776;</button>
   </header>
-    <div class="sidebar" id="sidebar">
+
+  <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <button id="close-sidebar" class="close-btn">&times;</button>
     </div>
     <div class="sidebar-content">
-     <button onclick="window.location.href='profile.html'">
-      <i class="fa-solid fa-user"></i> Profile
-     </button>
-   <button onclick="window.location.href='about-us.html'">
-    <i class="fa-solid fa-info-circle"></i> About Us
-   </button>
-  <button onclick="window.location.href='contact.html'">
-    <i class="fa-solid fa-envelope"></i> Contact Us
-  </button>  
+      <button onclick="window.location.href='profile.html'"><i class="fa-solid fa-user"></i> Profile</button>
+      <button onclick="window.location.href='about-us.html'"><i class="fa-solid fa-info-circle"></i> About Us</button>
+      <button onclick="window.location.href='contact.html'"><i class="fa-solid fa-envelope"></i> Contact Us</button>
     </div>
   </div>
 
-  <section class="intro">
-    <h2>Log In</h2>
-    <input type="text" id="login-username" placeholder="Username" class="login-input">
-    <input type="password" id="login-password" placeholder="Password" class="login-input">
-    <button class="btn" id="login-submit">Confirm</button>
-    <p id="login-message"></p>
+  <section class="intro" aria-labelledby="login-heading">
+    <h2 id="login-heading">Log In</h2>
+
+    <!-- Username OR Email: wir bieten beide Felder an, Login akzeptiert entweder Username oder Email -->
+    <label for="login-username" style="display:block; font-weight:600;">Username</label>
+    <input type="text" id="login-username" class="login-input" placeholder="Username" aria-label="Username">
+
+    <label for="login-email" style="display:block; font-weight:600; margin-top:6px;">Or E-Mail</label>
+    <input type="email" id="login-email" class="login-input" placeholder="email@example.com" aria-label="Email (optional)">
+
+    <label for="login-password" style="display:block; font-weight:600; margin-top:6px;">Password</label>
+    <input type="password" id="login-password" class="login-input" placeholder="Password" aria-label="Password">
+
+    <div class="form-row">
+      <button class="btn" id="login-submit" aria-live="polite">Confirm</button>
+      <div class="remember-checkbox">
+        <input type="checkbox" id="remember-me" />
+        <label for="remember-me">Remember me</label>
+      </div>
+    </div>
+
+    <div class="aux-actions">
+      <button class="link-like" id="forgot-pw">Forgot password?</button>
+      <button class="link-like" onclick="window.location.href='register.html'">Create account</button>
+    </div>
+
+    <p id="login-message" role="status" aria-atomic="true"></p>
   </section>
 
   <footer>
@@ -53,27 +82,151 @@
 
   <script src="script.js"></script>
   <script>
-    document.getElementById("login-submit").addEventListener("click", () => {
-      const user = document.getElementById("login-username").value.trim();
-      const pass = document.getElementById("login-password").value.trim();
-      const message = document.getElementById("login-message");
+    // Self-contained login logic with guards to avoid double-binding if other script also binds the same button.
+    (function() {
+      // Run after DOM loaded
+      document.addEventListener('DOMContentLoaded', () => {
+        const loginSubmit = document.getElementById('login-submit');
+        const usernameInput = document.getElementById('login-username');
+        const emailInput = document.getElementById('login-email');
+        const passwordInput = document.getElementById('login-password');
+        const messageEl = document.getElementById('login-message');
+        const rememberCheckbox = document.getElementById('remember-me');
+        const forgotBtn = document.getElementById('forgot-pw');
 
-      let users = JSON.parse(localStorage.getItem("users")) || [];
-      let found = users.find(u => u.username === user && u.password === pass);
+        if (!loginSubmit) return;
 
-      if (found) {
-        message.textContent = "Log-In Succesful!";
-        message.style.color = "#0f0";
+        // Guard: falls schon gebunden, nicht nochmal hinzufügen
+        if (loginSubmit.dataset.bound === '1') return;
+        loginSubmit.dataset.bound = '1';
 
-        // Session speichern
-        localStorage.setItem("currentUser", user);
+        // Show message helper
+        function showMessage(text, color) {
+          messageEl.textContent = text;
+          messageEl.style.color = color;
+          messageEl.style.opacity = '1';
+          messageEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 250, iterations: 1 });
+        }
 
-        setTimeout(() => window.location.href = "profile.html", 1200);
-      } else {
-        message.textContent = "Wrong Username or Password!";
-        message.style.color = "#f00";
-      }
-    });
+        // Basic email validator
+        function isValidEmail(e) {
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+        }
+
+        loginSubmit.addEventListener('click', (ev) => {
+          ev.preventDefault();
+
+          const username = usernameInput.value.trim();
+          const email = emailInput.value.trim();
+          const password = passwordInput.value.trim();
+
+          // Basic checks
+          if (!username && !email) {
+            showMessage('Please fill out everything (username or email)!', 'red');
+            usernameInput.focus();
+            return;
+          }
+          if (!password) {
+            showMessage('Please enter your password!', 'red');
+            passwordInput.focus();
+            return;
+          }
+          if (email && !isValidEmail(email)) {
+            showMessage('Please enter a valid email address!', 'red');
+            emailInput.focus();
+            return;
+          }
+
+          // Load users from localStorage
+          const users = JSON.parse(localStorage.getItem('users')) || [];
+
+          // Find by username+password OR email+password
+          const found = users.find(u => (
+            (u.username && u.username.toLowerCase() === username.toLowerCase() && u.password === password) ||
+            (email && u.email && u.email.toLowerCase() === email.toLowerCase() && u.password === password)
+          ));
+
+          if (found) {
+            showMessage('Log-In Successful! Redirecting…', 'limegreen');
+
+            // Save session (respect remember me)
+            try {
+              if (rememberCheckbox.checked) {
+                localStorage.setItem('currentUser', found.username);
+              } else {
+                // session-like behavior: still store so nav updates, but you can later implement sessionStorage
+                localStorage.setItem('currentUser', found.username);
+              }
+            } catch (e) {
+              // fallback: ignore storage errors
+              console.warn('Could not save session:', e);
+            }
+
+            // slight delay for UX
+            setTimeout(() => {
+              window.location.href = 'profile.html';
+            }, 900);
+          } else {
+            // More helpful message: check whether username/email exists to give user better hint
+            const userByName = users.find(u => u.username && u.username.toLowerCase() === username.toLowerCase());
+            const userByEmail = users.find(u => email && u.email && u.email.toLowerCase() === email.toLowerCase());
+
+            if ((username && userByName && !userByName.password) || (email && userByEmail && !userByEmail.password)) {
+              showMessage('Account found but no password set. Try resetting your password.', 'red');
+            } else if (username && (userByName) && !password) {
+              showMessage('Wrong password for this username.', 'red');
+            } else if (email && (userByEmail) && !password) {
+              showMessage('Wrong password for this email.', 'red');
+            } else {
+              showMessage('Wrong Username or Password!', 'red');
+            }
+            // small shake animation (optional, purely visual)
+            try {
+              loginSubmit.animate([
+                { transform: 'translateX(0)' },
+                { transform: 'translateX(-6px)' },
+                { transform: 'translateX(6px)' },
+                { transform: 'translateX(0)' }
+              ], { duration: 300, iterations: 1 });
+            } catch (e) { /* ignore animation errors */ }
+          }
+        });
+
+        // Forgot password: give helpful UX (localStorage-based simple flow)
+        if (forgotBtn) {
+          forgotBtn.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            const email = emailInput.value.trim();
+            if (!email) {
+              showMessage('Enter your account email above to reset password.', 'red');
+              emailInput.focus();
+              return;
+            }
+            if (!isValidEmail(email)) {
+              showMessage('Please enter a valid email to reset.', 'red');
+              emailInput.focus();
+              return;
+            }
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            const user = users.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
+            if (!user) {
+              showMessage('No account found with that email.', 'red');
+              return;
+            }
+
+            // Very simple reset flow: ask for new password (prompt fallback) — safe enough for local demo
+            const newPw = prompt('Enter a new password (min 8 chars):');
+            if (!newPw || newPw.length < 8) {
+              showMessage('Password reset cancelled or too short.', 'red');
+              return;
+            }
+            user.password = newPw;
+            localStorage.setItem('users', JSON.stringify(users));
+            showMessage('Password reset successful. You can now log in.', 'limegreen');
+          });
+        }
+      }); // DOMContentLoaded
+    })();
   </script>
 </body>
 </html>
