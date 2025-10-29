@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>YGJ - About Us</title>
+
+  <!-- Styles & Fonts -->
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap" rel="stylesheet" />
@@ -11,7 +13,7 @@
 </head>
 
 <body>
-
+  <!-- HEADER -->
   <header>
     <a href="index.html" class="home-btn">
       <img
@@ -22,7 +24,6 @@
 
     <h1>Youth Growing Journey</h1>
 
-    <!-- Wichtig: IDs hinzugefügt für Script-Kompatibilität -->
     <button id="login-btn" class="btn login-header-btn" onclick="window.location.href='login.html'">
       <i class="fa-solid fa-right-to-bracket"></i> Log In
     </button>
@@ -35,6 +36,7 @@
     <button id="menu-toggle" class="menu-btn">&#9776;</button>
   </header>
 
+  <!-- SIDEBAR -->
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <button id="close-sidebar" class="close-btn">&times;</button>
@@ -45,7 +47,7 @@
         <i class="fa-solid fa-user"></i> Profile
       </button>
 
-      <button onclick="window.location.href='about-us.html'">
+      <button onclick="window.location.href='about-us.html'" class="active">
         <i class="fa-solid fa-info-circle"></i> About Us
       </button>
 
@@ -58,25 +60,99 @@
       </button>
     </div>
   </div>
-  <section class="intro">
-    <h2>About Us</h2>
-    <p>
-      Youth Growing Journey (YGJ) is more than just a website – it's a movement.<br />
-      We deeply believe that every human has the potential to grow, reach their goals,
-      and become the best version of themselves.
-    </p>
-    <p>
-      Founded by young visionaries, YGJ creates structure and community.<br />
-      Our goal is to give you all the tools you need to reach your true potential — no matter where you start.
-    </p>
-    <p>
-      Whether you're starting for free or joining our premium plan, our focus is always on progress.<br />
-      We're here to walk the path with you.
-    </p>
-  </section>
+
+  <!-- MAIN CONTENT -->
+  <main class="page-container about-page">
+    <!-- HERO SECTION -->
+    <section class="about-hero">
+      <h2>About <span>YGJ</span></h2>
+      <p>Empowering youth to grow stronger, wiser, and unstoppable.</p>
+    </section>
+
+    <!-- OUR MISSION -->
+    <section class="about-mission">
+      <h3>Our Mission</h3>
+      <p style=" box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25); border-radius: 16px; padding: 20px;">
+        Youth Growing Journey (YGJ) isn’t just a website – it’s a movement.
+        Our mission is to guide individuals toward becoming their best selves.
+        Whether it’s through mindset, fitness, or discipline – we believe in 
+        structured growth and long-term success.
+      </p>
+    </section>
+
+    <!-- OUR VALUES -->
+    <section class="about-values">
+      <h3>Our Core Values</h3>
+      <div class="values-grid">
+        <div class="value-card">
+          <i class="fa-solid fa-bullseye"></i>
+          <h4>Focus</h4>
+          <p>Every step you take matters. Stay focused on your vision and never lose sight of your goal.</p>
+        </div>
+        <div class="value-card">
+          <i class="fa-solid fa-dumbbell"></i>
+          <h4>Discipline</h4>
+          <p>Success isn’t luck — it’s built day by day through consistent effort and dedication.</p>
+        </div>
+        <div class="value-card">
+          <i class="fa-solid fa-fire"></i>
+          <h4>Passion</h4>
+          <p>Your drive fuels your growth. We believe passion turns dreams into unstoppable action.</p>
+        </div>
+        <div class="value-card">
+          <i class="fa-solid fa-people-group"></i>
+          <h4>Community</h4>
+          <p>We rise together. YGJ builds a space where motivation, strength, and purpose unite.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- THE STORY -->
+    <section class="about-story">
+      <h3>Our Story</h3>
+      <p style=" box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25); border-radius: 16px; padding: 20px;">
+        YGJ was born from a simple belief: <strong>growth is a journey, not a moment.</strong>  
+        Founded by young dreamers, we’ve created a platform that empowers youth all around the world.  
+        We combine structure, mindset, and community to help you achieve real progress – mentally, physically, and personally.
+      </p>
+    </section>
+
+    <!-- TEAM SECTION -->
+    <section class="about-team">
+      <h3>Meet The Visionaries</h3>
+      <div class="team-grid">
+        <div style="transition: transform 0.2s ease;" class="team-card">
+          <img src="assets/ygj-logo-white-blanc.png" alt="Founder" />
+          <h4>A. Baumer</h4>
+          <p>Founder & Visionary</p>
+          <p class="quote">“I wouldn't be satisfied with my life, if I won't achieve my goals.”</p>
+        </div>
+        <div style="transition: transform 0.2s ease;" class="team-card">
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMdM9MEQ0ExL1PmInT3U5I8v63YXBEdoIT0Q&s" alt="Co-Founder" />
+          <h4>Future Team</h4>
+          <p>Creators & Builders</p>
+          <p class="quote">“Together we rise – as one generation that refuses to give up.”</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA SECTION -->
+    <section class="about-cta">
+      <h3>Join the Journey</h3>
+      <p style=" box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25); border-radius: 16px; padding: 20px;">Start growing today. Whether it’s your first step or your next milestone — YGJ walks beside you.</p>
+      <button class="btn" onclick="window.location.href='register.html'">
+        <i class="fa-solid fa-arrow-right"></i> Get Started
+      </button>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
   <footer>
-    &copy; Youth Growing Journey – built for a strong generation.
+    &copy; 2025 Youth Growing Journey – Built for a strong generation.
   </footer>
+
   <script src="script.js"></script>
 </body>
 </html>
+
+
