@@ -8,6 +8,44 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    /* === Kleine optische Verfeinerungen für das Register-Form === */
+    .intro {
+      text-align: center;
+      margin-top: 60px;
+    }
+
+    .intro input {
+      display: block;
+      margin: 10px auto;
+      padding: 10px;
+      width: 80%;
+      max-width: 300px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      transition: border-color 0.3s ease;
+    }
+
+    .intro input:focus {
+      outline: none;
+      border-color: #e0c280;
+    }
+
+    #register-message {
+      font-weight: bold;
+      margin-top: 12px;
+      transition: opacity 0.3s ease;
+    }
+
+    .error-flash {
+      animation: flashRed 0.5s ease;
+    }
+
+    @keyframes flashRed {
+      from { color: #000; }
+      to { color: #f00; }
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -15,11 +53,13 @@
       <img src="https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/home-page-white-icon.png" alt="Home">
     </a>
     <h1>Youth Growing Journey</h1>
-     <button class="btn login-header-btn" onclick="window.location.href='login.html'">
-    <i class="fa-solid fa-right-to-bracket"></i> Log In
-   </button>
-     <button class="btn" onclick="window.location.href='register.html'"><i class="fa-solid fa-user-plus"></i> Sign Up</button>
-     <button id="theme-toggle" class="theme-btn" aria-label="Switch theme" style="margin-right: 10px; padding: 10px 12px 12px 12px;">🌙</button>
+    <button class="btn login-header-btn" onclick="window.location.href='login.html'">
+      <i class="fa-solid fa-right-to-bracket"></i> Log In
+    </button>
+    <button class="btn" onclick="window.location.href='register.html'">
+      <i class="fa-solid fa-user-plus"></i> Sign Up
+    </button>
+    <button id="theme-toggle" class="theme-btn" aria-label="Switch theme" style="margin-right: 10px; padding: 10px 12px 12px 12px;">🌙</button>
     <button id="menu-toggle" class="menu-btn">&#9776;</button>
   </header>
 
@@ -28,64 +68,111 @@
       <button id="close-sidebar" class="close-btn">&times;</button>
     </div>
     <div class="sidebar-content">
-       <button onclick="window.location.href='profile.html'">
-    <i class="fa-solid fa-user"></i> Profile
-  </button>
-  <button onclick="window.location.href='about-us.html'">
-    <i class="fa-solid fa-info-circle"></i> About Us
-  </button>
-  <button onclick="window.location.href='contact.html'">
-    <i class="fa-solid fa-envelope"></i> Contact Us
-  </button>
+      <button onclick="window.location.href='profile.html'">
+        <i class="fa-solid fa-user"></i> Profile
+      </button>
+      <button onclick="window.location.href='about-us.html'">
+        <i class="fa-solid fa-info-circle"></i> About Us
+      </button>
+      <button onclick="window.location.href='contact.html'">
+        <i class="fa-solid fa-envelope"></i> Contact Us
+      </button>
     </div>
   </div>
 
   <section class="intro">
     <h2>Create Account</h2>
+
     <input type="text" id="new-username" placeholder="Username" class="login-input">
-    <div>
-    <label for="new-email">Email:</label>
-    <input type="email" id="new-email" placeholder="Enter email" />
-  </div>
-    <input type="password" id="new-password" placeholder="Password" class="login-input">
     
-    <button class="btn" id="register-submit">Confirm</button>
+    <div>
+      <label for="new-email">Email:</label>
+      <input type="email" id="new-email" placeholder="Enter email" />
+    </div>
+
+    <input type="password" id="new-password" placeholder="Password (min. 8 characters)" class="login-input" minlength="8">
+    
+    <button class="btn" id="register-submit"><i class="fa-solid fa-user-plus"></i> Confirm</button>
+
     <p id="register-message"></p>
   </section>
 
   <footer>
     &copy; Youth Growing Journey – built for a strong generation.
   </footer>
-
-  <script src="script.js"></script>
+<script src="script.js"></script>
   <script>
-    document.getElementById("register-submit").addEventListener("click", () => {
-      const user = document.getElementById("new-username").value.trim();
-      const pass = document.getElementById("new-password").value.trim();
+    document.addEventListener("DOMContentLoaded", () => {
+      const usernameInput = document.getElementById("new-username");
+      const emailInput = document.getElementById("new-email");
+      const passwordInput = document.getElementById("new-password");
+      const registerBtn = document.getElementById("register-submit");
       const message = document.getElementById("register-message");
 
-      if (!user || !pass) {
-        message.textContent = "Please Fill Out Every Container";
-        message.style.color = "#f00";
-        return;
-      }
+      registerBtn.addEventListener("click", (e) => {
+        e.preventDefault();
 
-      // existierende User laden
-      let users = JSON.parse(localStorage.getItem("users")) || [];
-      if (users.find(u => u.username === user)) {
-        message.textContent = "Username Not Available";
-        message.style.color = "#f00";
-        return;
-      }
+        const username = usernameInput.value.trim();
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
 
-      // neuen User speichern
-      users.push({ username: user, password: pass });
-      localStorage.setItem("users", JSON.stringify(users));
+        // Reset styles
+        usernameInput.style.borderColor = "";
+        emailInput.style.borderColor = "";
+        passwordInput.style.borderColor = "";
+        message.textContent = "";
+        message.style.opacity = "1";
 
-      message.textContent = "Registration Sucessful!";
-      message.style.color = "#0f0";
+        // Input check
+        if (!username || !email || !password) {
+          message.textContent = "Please fill out everything!";
+          message.style.color = "#f00";
+          message.classList.add("error-flash");
+          if (!username) usernameInput.style.borderColor = "red";
+          if (!email) emailInput.style.borderColor = "red";
+          if (!password) passwordInput.style.borderColor = "red";
+          return;
+        }
 
-      setTimeout(() => window.location.href = "login.html", 1200);
+        if (password.length < 8) {
+          message.textContent = "Password must be at least 8 characters!";
+          message.style.color = "#f00";
+          passwordInput.style.borderColor = "red";
+          message.classList.add("error-flash");
+          return;
+        }
+
+        let users = JSON.parse(localStorage.getItem("users")) || [];
+
+        const usernameExists = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+        const emailExists = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+
+        if (usernameExists || emailExists) {
+          if (usernameExists) {
+            message.textContent = "⚠️ Username already in use!";
+            usernameInput.style.borderColor = "red";
+          } else {
+            message.textContent = "⚠️ Email already in use!";
+            emailInput.style.borderColor = "red";
+          }
+          message.style.color = "#f00";
+          message.classList.add("error-flash");
+          return;
+        }
+
+        // Save user
+        users.push({ username, email, password });
+        localStorage.setItem("users", JSON.stringify(users));
+
+        // Success
+        message.textContent = "✅ Registration successful! Redirecting...";
+        message.style.color = "#0f0";
+        message.classList.remove("error-flash");
+
+        setTimeout(() => {
+          window.location.href = "login.html";
+        }, 1200);
+      });
     });
   </script>
 </body>
