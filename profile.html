@@ -3,561 +3,180 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>YGJ-Profile</title>
+  <title>Profile – YGJ</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    /* Small page-specific styles for the updated profile page */
-    .intro { max-width:1100px; margin:18px auto; padding:1rem; }
-    .profile-stats { display:grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-top:12px; }
-    .stat { background:rgba(0,0,0,0.045); padding:12px; border-radius:12px; text-align:center; }
-    .stat h3 { margin:0; font-size:1.4rem; }
-    .profile-buttons { margin-top:12px; display:flex; gap:.6rem; }
-    .btn { border-radius:6px; border:0; cursor:pointer; background:#e0c280; color:#fff; }
-    .avatar { width:72px; height:72px; border-radius:12px; object-fit:cover; }
-
-    /* Statistics small chart */
-    .stats-grid { display:grid; grid-template-columns: 1fr 320px; gap:12px; }
-    .chart { width:100%; height:150px; border-radius:8px; padding:8px; background:linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.04)); }
-    table.stats-table { width:100%; border-collapse:collapse; }
-    table.stats-table th, table.stats-table td { padding:8px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; }
-
-    .small { font-size:.92rem; color:#e0c280; }
-
-    body.dark .achievement {
-      background: #444;
+    .profile-container {
+      max-width: 500px;
+      margin: 80px auto;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
     }
-    /* --- PROFILE LAYOUT RESTRUCTURED --- */
-.profile-card {
-  background: rgba(0,0,0,0.03);
-  border-radius: 14px;
-  padding: 1.2rem 1.4rem;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-  margin-bottom: 18px;
-}
 
-.profile-top {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  flex-wrap: wrap;
-}
+    .profile-container h2 {
+      font-size: 1.8em;
+      margin-bottom: 12px;
+    }
 
-.profile-info h2 {
-  margin: 0;
-  font-size: 1.5rem;
-  color: #e0c280;
-}
-#profile-info {
-  white-space: pre-wrap;       /* Erlaubt Zeilenumbrüche und erhält manuelle \n */
-  word-wrap: break-word;       /* Bricht Wörter bei zu langen Zeilen */
-  overflow-wrap: break-word;   /* Moderne Alternative zu word-wrap */
-  max-width: 100%;             /* Verhindert Überlauf */
-  line-height: 1.4;            /* Bessere Lesbarkeit */
-}
-.profile-actions {
-  margin-left: auto;
-}
+    .profile-detail {
+      margin: 10px 0;
+      font-size: 1.1em;
+    }
 
-.stats-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 14px;
-  margin: 1.2rem 0;
-}
+    .logout-btn {
+      margin-top: 20px;
+      padding: 10px 18px;
+      border: none;
+      background-color: #e0c280;
+      color: #222;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
 
-.stat-card {
-  background: rgba(255,255,255,0.08);
-  border-radius: 14px;
-  padding: 1rem;
-  text-align: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-  transition: transform 0.2s ease;
-}
+    .logout-btn:hover {
+      background-color: #d2b46d;
+    }
 
-.stat-card:hover {
-  transform: translateY(-4px);
-}
+    #profile-message {
+      color: red;
+      font-weight: bold;
+      margin-top: 10px;
+    }
 
-.quick-actions {
-  margin-top: 1.2rem;
-  text-align: center;
-}
-
-.action-buttons {
-  display: flex;
-  gap: .5rem;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-top: .5rem;
-}
-
-.extra-panels {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 16px;
-  margin-top: 1.6rem;
-}
-
-.panel {
-  background: rgba(255,255,255,0.08);
-  border-radius: 14px;
-  padding: 1rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  text-align: center;
-  transition: all 0.2s ease;
-}
-
-.panel:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 18px rgba(0,0,0,0.18);
-}
-
-body.dark .profile-card,
-body.dark .panel,
-body.dark .stat-card {
-  background: #444;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-}
-  #profile-info {
-   white-space: pre-wrap;       /* Zeilenumbrüche aus dem Text werden beachtet */
-   word-wrap: break-word;       /* Lange Wörter umbrechen */
-   overflow-wrap: break-word;   /* Moderne Alternative zu word-wrap */
-   max-width: 100%;             /* Kein horizontaler Overflow */
-   line-height: 1.4;            /* Bessere Lesbarkeit */
-}
+    .loading {
+      text-align: center;
+      margin-top: 60px;
+      font-size: 1.2em;
+    }
   </style>
 </head>
 <body>
-   <header>
+  <header>
     <a href="index.html" class="home-btn">
-      <img
-        src="https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/home-page-white-icon.png" alt="Home"/>
+      <img src="https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/home-page-white-icon.png" alt="Home">
     </a>
     <h1>Youth Growing Journey</h1>
-    <button id="login-btn" class="btn login-header-btn" onclick="window.location.href='login.html'">
+    <button class="btn login-header-btn" onclick="window.location.href='login.html'">
       <i class="fa-solid fa-right-to-bracket"></i> Log In
     </button>
-    <button id="signup-btn" class="btn" onclick="window.location.href='register.html'">
+    <button class="btn" onclick="window.location.href='register.html'">
       <i class="fa-solid fa-user-plus"></i> Sign Up
     </button>
-    <button id="theme-toggle" class="theme-btn" aria-label="Switch theme">🌙</button>
+    <button id="theme-toggle" class="theme-btn" aria-label="Switch theme" style="margin-right: 10px;">🌙</button>
     <button id="menu-toggle" class="menu-btn">&#9776;</button>
   </header>
 
- <!-- SIDEBAR -->
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <button id="close-sidebar" class="close-btn">&times;</button>
     </div>
-
     <div class="sidebar-content">
       <button onclick="window.location.href='profile.html'">
         <i class="fa-solid fa-user"></i> Profile
       </button>
-
-      <button onclick="window.location.href='about-us.html'" class="active">
+      <button onclick="window.location.href='about-us.html'">
         <i class="fa-solid fa-info-circle"></i> About Us
       </button>
-
       <button onclick="window.location.href='contact.html'">
         <i class="fa-solid fa-envelope"></i> Contact Us
-      </button>
-
-      <button id="logout-btn">
-        <i class="fa-solid fa-right-from-bracket"></i> Log Out
       </button>
     </div>
   </div>
 
-<main class="intro">
-  <!-- PROFILE CARD -->
-  <section class="profile-card" style="max-width: 460px;">
-    <div class="profile-top">
-      <img id="profile-avatar" class="avatar" src="https://placehold.co/200x200/png?text=YGJ" alt="Avatar">
-      <div class="profile-info">
-        <h2 id="display-name">Guest</h2>
-        <p class="small" id="profile-email">Not logged-in</p>
-        <p class="small" id="profile-info"></p>
-      </div>
-      <div class="profile-actions">
-        <button id="edit-profile" class="btn">Edit</button>
-      </div>
-    </div>
-  </section>
+  <main>
+    <div id="loading" class="loading">Loading your profile...</div>
 
-  <!-- STATISTICS GRID -->
-  <section class="stats-section">
-    <div class="stat-card">
-      <h3 id="progress-percentage">0%</h3>
-      <p>Goals Completed</p>
-    </div>
-    <div class="stat-card">
-      <h3 id="tasks-completed">0</h3>
-      <p>Tasks Completed</p>
-    </div>
-    <div class="stat-card">
-      <h3 id="streak-days">0</h3>
-      <p>Streak (Days)</p>
-    </div>
-    <div class="stat-card">
-      <h3 id="level">1</h3>
-      <p>Level</p>
-    </div>
-  </section>
+    <section class="profile-container" id="profile-section" style="display:none;">
+      <h2>Welcome, <span id="profile-name"></span> 👋</h2>
+      <div class="profile-detail"><strong>Email:</strong> <span id="profile-email"></span></div>
+      <div class="profile-detail"><strong>Member ID:</strong> <span id="profile-id"></span></div>
+      <button class="logout-btn" id="logout-btn">Log Out</button>
+      <p id="profile-message"></p>
+    </section>
+  </main>
 
-  <!-- ACTION BUTTONS -->
-  <section class="quick-actions">
-    <h3>Quick Actions</h3>
-    <div class="action-buttons">
-      <button id="export-profile" class="btn">Export Profile</button>
-      <button id="reset-progress" class="btn">Reset Progress</button>
-      <button id="goto-free-plan" class="btn">Open Free Plan</button>
-    </div>
-  </section>
+  <footer>
+    &copy; Youth Growing Journey – built for a strong generation.
+  </footer>
 
-  <!-- ADDITIONAL PANELS -->
-  <section class="extra-panels">
-    <div class="panel">
-      <h3>Achievements</h3>
-      <p class="small">View your earned badges</p>
-      <button id="view-achievements" class="btn">View</button>
-    </div>
-    <div class="panel">
-      <h3>Statistics</h3>
-      <p class="small">See your progress trends</p>
-      <button id="view-stats" class="btn">Open</button>
-    </div>
-  </section>
-</main>
-
-  <footer style="text-align:center; padding:18px; opacity:.8">&copy; Youth Growing Journey</footer>
-
-  <!-- global shared behaviors (your existing script.js) -->
   <script src="script.js"></script>
+  <script>
+    (function() {
+      const API_BASE = 'http://localhost:5000/api'; // Replace for production
+      const TOKEN_KEY = 'ygj_token';
+      const USER_KEY = 'ygj_user';
 
-  <!-- Profile-specific logic: this ties the profile page to the Free Plan storage and makes progress "real" -->
-<script>
-// Delegate Logout: funktioniert auf allen Seiten
-document.body.addEventListener("click", (e) => {
-    if (e.target && e.target.id === "logout-btn") {
-        localStorage.removeItem("currentUser");
-        updateNav();
-        alert("You have been logged out.");
-        window.location.href = "index.html";
-    }
-});
-
-(function() {
-    // --- Helpers to access per-user free-plan storage ---
-    const getCurrentUser = () => localStorage.getItem('currentUser') || 'guest';
-    const nsFree = (key) => `ygj_free_${getCurrentUser()}_${key}`; // matches free-plan keys
-    const nsProfile = (key) => `ygj_profile_${getCurrentUser()}_${key}`; // profile metadata
-
-    // UI elements
-    const elDisplayName = document.getElementById('display-name');
-    const elEmail = document.getElementById('profile-email');
-    const elAvatar = document.getElementById('profile-avatar');
-    const elProgress = document.getElementById('progress-percentage');
-    const elTasksDone = document.getElementById('tasks-completed');
-    const elStreak = document.getElementById('streak-days');
-    const elLevel = document.getElementById('level');
-    const elInfo = document.getElementById('profile-info');
-
-    function loadStreak() {
-        try { return JSON.parse(localStorage.getItem(nsFree('streak')) || '{"count":0,"last":""}'); }
-        catch (e) { return { count:0, last: '' }; }
-    }
-
-    function saveStreak(obj) { localStorage.setItem(nsFree('streak'), JSON.stringify(obj)); }
-
-    function loadProfile() {
-        try { return JSON.parse(localStorage.getItem(nsProfile('meta')) || '{}'); }
-        catch { return {}; }
-    }
-
-    // ========== KPI-Statistik aus Free Plan übernehmen ==========
-    function ns(key) { return `ygj_${key}`; }
-
-    // =====================
-    // TASKS + HISTORY HANDLING
-    // =====================
-    function loadTasks() {
-        try { return JSON.parse(localStorage.getItem(nsFree('tasks')) || '[]'); }
-        catch (e) { return []; }
-    }
-
-    function saveTasks(tasks) {
-        localStorage.setItem(nsFree('tasks'), JSON.stringify(tasks));
-    }
-
-    function loadCompletedHistory() {
-        try { return JSON.parse(localStorage.getItem(nsFree('completedHistory')) || '[]'); }
-        catch (e) { return []; }
-    }
-
-    function saveCompletedHistory(history) {
-        localStorage.setItem(nsFree('completedHistory'), JSON.stringify(history));
-    }
-
-    function normalizeTasksWithHistory() {
-        let tasks = loadTasks();
-        let history = loadCompletedHistory();
-        let changed = false;
-
-        const archivedIds = new Set(history.map(h => h.id));
-
-        tasks.forEach(t => {
-            if (t.done && !t.doneAt) {
-                t.doneAt = Date.now();
-                changed = true;
+      async function fetchProfile(token) {
+        try {
+          const res = await fetch(\`\${API_BASE}/auth/me\`, {
+            headers: {
+              'Authorization': 'Bearer ' + token
             }
+          });
+          if (!res.ok) return null;
+          const data = await res.json();
+          return data;
+        } catch (err) {
+          console.error('Profile fetch failed', err);
+          return null;
+        }
+      }
+
+      function redirectToLogin() {
+        window.location.href = 'login.html';
+      }
+
+      function logout() {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(USER_KEY);
+        redirectToLogin();
+      }
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        const token = localStorage.getItem(TOKEN_KEY);
+        const loading = document.getElementById('loading');
+        const profileSection = document.getElementById('profile-section');
+        const nameEl = document.getElementById('profile-name');
+        const emailEl = document.getElementById('profile-email');
+        const idEl = document.getElementById('profile-id');
+        const msgEl = document.getElementById('profile-message');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        // Kein Token → redirect
+        if (!token) {
+          redirectToLogin();
+          return;
+        }
+
+        // Token vorhanden → Daten laden
+        const userData = await fetchProfile(token);
+
+        if (!userData || !userData.email) {
+          console.warn('Invalid token or expired session');
+          logout();
+          return;
+        }
+
+        // Daten anzeigen
+        loading.style.display = 'none';
+        profileSection.style.display = 'block';
+        nameEl.textContent = userData.displayName || 'User';
+        emailEl.textContent = userData.email;
+        idEl.textContent = userData.id || userData._id || '-';
+
+        logoutBtn.addEventListener('click', () => {
+          logout();
         });
-
-        tasks.filter(t => t.done && !archivedIds.has(t.id))
-             .forEach(t => history.push({ ...t, archivedAt: Date.now() }));
-
-        saveCompletedHistory(history);
-        if (changed) saveTasks(tasks);
-
-        return { tasks, history };
-    }
-
-    // =====================
-    // KPI-Berechnung
-    // =====================
-    function computeKPIs() {
-        const { tasks, history } = normalizeTasksWithHistory();
-        const total = tasks.length + history.length;
-        const done = tasks.filter(t => t.done).length + history.length;
-        const progress = total ? Math.round((done / total) * 100) : 0;
-        const streak = loadStreak().count || 0;
-        const level = Math.max(1, Math.floor(progress / 20) + 1);
-
-        return { total, done, progress, streak, level, tasks };
-    }
-
-    // =====================
-    // RENDER PROFILE
-    // =====================
-    function renderProfile() {
-        const user = getCurrentUser();
-        const profile = loadProfile();
-        elDisplayName.textContent = profile.displayName || (user === 'guest' ? 'Guest' : user);
-        elEmail.textContent = profile.email || (user === 'guest' ? 'Not logged in' : profile.email || '—');
-        elAvatar.src = profile.avatar || elAvatar.src;
-        elInfo.innerHTML = (profile.info || (user === 'guest' ? 'No Info' : '-'))
-                    .replace(/\n/g, '<br>');
-
-        const k = computeKPIs();
-        elProgress.textContent = k.progress + '%';
-        elTasksDone.textContent = k.done;
-        elStreak.textContent = k.streak;
-        elLevel.textContent = k.level;
-        elProgress.setAttribute('aria-valuenow', k.progress);
-    }
-
-    // --- Edit Profile Modal ---
-    function openEditProfile() {
-        const existing = loadProfile();
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.innerHTML = `
-        <div class="modal-content">
-            <h3>Edit Profile</h3>
-            <div style="display:flex; gap:12px; align-items:center; margin-top:8px">
-                <img id="modal-avatar-preview" src="${existing.avatar || elAvatar.src}" alt="avatar" style="width:84px;height:84px;border-radius:10px;object-fit:cover">
-                <div style="flex:1">
-                    <label class="small acc">Display Name (max. 20 characters)<br><input id="modal-displayname" type="text" maxlength="20" style="width:100%; padding:.4rem; margin-top:6px; border-radius:8px; border: solid 1.5px #e0c280;" value="${existing.displayName || ''}"></label>
-                    <label class="small acc">Email (optional)<br><input id="modal-email" type="email" style="width:100%; padding:.4rem; margin-top:6px; border-radius:8px; border: solid 1.5px #e0c280;" value="${existing.email || ''}"></label>
-                    <label class="small acc">Avatar (URL)<br><input id="modal-avatar" type="url" style="width:100%; padding:.4rem; margin-top:6px; border-radius:8px; border: solid 1.5px #e0c280;" value="${existing.avatar || ''}"></label>
-                    <label class="small acc">Info (max. 200 characters)<br><textarea id="modal-info" maxlength="200" rows="4" style="width:100%; padding:.4rem; margin-top:6px; border-radius:8px; border: solid 1.5px #e0c280; resize:vertical;">${existing.info || ''}</textarea>
-
-                </div>
-            </div>
-            <div style="display:flex; gap:.6rem; justify-content:flex-end; margin-top:12px">
-                <button id="modal-cancel" class="btn">Cancel</button>
-                <button id="modal-save" class="btn">Save</button>
-            </div>
-        </div>`;
-        document.body.appendChild(modal);
-
-        modal.querySelector('#modal-cancel').addEventListener('click', () => modal.remove());
-        modal.querySelector('#modal-save').addEventListener('click', () => {
-            const newMeta = {
-                displayName: modal.querySelector('#modal-displayname').value.trim() || existing.displayName || getCurrentUser(),
-                email: modal.querySelector('#modal-email').value.trim() || existing.email || '',
-                avatar: modal.querySelector('#modal-avatar').value.trim() || existing.avatar || elAvatar.src,
-                info: modal.querySelector('#modal-info').value.trim() || existing.info || ''
-            };
-            localStorage.setItem(nsProfile('meta'), JSON.stringify(newMeta));
-            renderProfile();
-            modal.remove();
-        });
-
-        modal.querySelector('#modal-avatar').addEventListener('input', (e) => {
-            modal.querySelector('#modal-avatar-preview').src = e.target.value || elAvatar.src;
-        });
-    }
-
-    // =====================
-    // MODALS: Achievements & Stats
-    // =====================
-    function openAchievements() {
-        const k = computeKPIs();
-        const tasks = k.tasks;
-        const ach = [];
-        if (tasks.length > 0) ach.push({ id:'first-task', title:'First Task', desc:'You added your first task.' });
-        if (k.done >= 1) ach.push({ id:'first-done', title:'First Completion', desc:'You completed your first task — nice!' });
-        if (k.streak >= 7) ach.push({ id:'7-day-streak', title:'7-day Streak', desc:'You kept going one whole week!' });
-        if (k.done >= 30) ach.push({ id:'30-done', title:'30 Tasks Done', desc:'30 tasks completed — consistent work!' });
-
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.innerHTML = `
-        <div class="modal-content">
-            <h3>Achievements</h3>
-            <p class="small">Earned badges based on your activity.</p>
-            <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap:8px; margin-top:12px">
-                ${ach.length ? ach.map(a => `<div class="achievement" style="border-radius:8px;padding:10px;background:#f7f7f7"><strong>${a.title}</strong><div class="small">${a.desc}</div></div>`).join('') : '<div class="small">No achievements yet. Keep grinding!</div>'}
-            </div>
-            <div style="display:flex; justify-content:flex-end; margin-top:12px"><button id="ach-close" class="btn">Close</button></div>
-        </div>`;
-        document.body.appendChild(modal);
-        modal.querySelector('#ach-close').addEventListener('click', () => modal.remove());
-    }
-
-    function openStatistics() {
-        const k = computeKPIs();
-        const tasks = k.tasks;
-        const days = 7; const counts = new Array(days).fill(0);
-        const labels = new Array(days).fill(0).map((_,i)=>{
-            const d = new Date(); d.setDate(d.getDate() - (days-1-i));
-            return d.toISOString().slice(0,10).slice(5);
-        });
-
-        tasks.forEach(t => {
-            if (t.done) {
-                const ts = t.doneAt || t.createdAt || Date.now();
-                const d = new Date(ts).toISOString().slice(0,10);
-                for (let i=0;i<days;i++){
-                    const dCheck = new Date(); dCheck.setDate(dCheck.getDate() - (days-1-i));
-                    if (d === dCheck.toISOString().slice(0,10)) counts[i]++;
-                }
-            }
-        });
-
-        const max = Math.max(1, ...counts);
-        const bars = counts.map(c => `<div style="flex:1; display:flex; flex-direction:column; align-items:center"><div style="height:${Math.round((c/max)*110)}px; width:22px; background:#3cc2ff; border-radius:6px"></div><div style="margin-top:6px; font-size:11px">${c}</div></div>`).join('');
-
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.innerHTML = `
-        <div class="modal-content">
-            <h3>Statistics</h3>
-            <div class="stats-grid" style="margin-top:8px">
-                <div>
-                    <p class="small">Total tasks: <strong>${k.total}</strong></p>
-                    <p class="small">Completed: <strong>${k.done}</strong></p>
-                    <p class="small">Completion rate: <strong>${k.progress}%</strong></p>
-                    <p class="small">Current streak: <strong>${k.streak} days</strong></p>
-                    <p class="small">Level: <strong>${k.level}</strong></p>
-                    <div style="margin-top:8px">
-                        <button id="stats-export-json" class="btn">Export Stats (JSON)</button>
-                        <button id="stats-close" class="btn">Close</button>
-                    </div>
-                </div>
-                <div style="padding:8px">
-                    <div style="display:flex; gap:6px; align-items:flex-end; height:140px;">
-                        ${bars}
-                    </div>
-                    <div style="display:flex; gap:6px; margin-top:8px; justify-content:space-between; font-size:11px; color:#555">${labels.map(l=>`<div style="width:22px;text-align:center">${l}</div>`).join('')}</div>
-                </div>
-            </div>
-        </div>`;
-        document.body.appendChild(modal);
-
-        modal.querySelector('#stats-close').addEventListener('click', () => modal.remove());
-        modal.querySelector('#stats-export-json').addEventListener('click', () => {
-            const payload = { meta: loadProfile(), kpis: { total:k.total, done:k.done, progress:k.progress, streak:k.streak, level:k.level }, tasks: tasks };
-            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `ygj_profile_${getCurrentUser()}_stats.json`; a.click(); URL.revokeObjectURL(url);
-        });
-    }
-
-    // =====================
-    // Small UX actions
-    // =====================
-    document.getElementById('edit-profile').addEventListener('click', openEditProfile);
-    document.getElementById('view-achievements').addEventListener('click', openAchievements);
-    document.getElementById('view-stats').addEventListener('click', openStatistics);
-    document.getElementById('goto-free-plan').addEventListener('click', () => window.location.href = 'free-plan.html');
-
-    document.getElementById('export-profile').addEventListener('click', () => {
-        const payload = { profile: loadProfile(), kpis: (() => { const k = computeKPIs(); return { total:k.total, done:k.done, progress:k.progress, streak:k.streak, level:k.level }; })(), ts: Date.now() };
-        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-        const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = `ygj_profile_${getCurrentUser()}.json`; a.click(); URL.revokeObjectURL(u);
-    });
-
-    document.getElementById('reset-progress').addEventListener('click', () => {
-        if (!confirm('Are you sure? Your streak will be reset!')) return;
-        localStorage.removeItem(nsFree('tasks'));
-        localStorage.removeItem(nsFree('streak'));
-        renderProfile();
-        alert('Resetted progress - Keep going!');
-    });
-
-    const menuToggle = document.getElementById('menu-toggle');
-    const sidebar = document.getElementById('sidebar');
-    const closeSidebar = document.getElementById('close-sidebar');
-    if (menuToggle && sidebar) {
-        menuToggle.addEventListener('click', () => sidebar.style.display = 'block');
-        if (closeSidebar) closeSidebar.addEventListener('click', () => sidebar.style.display = 'none');
-    }
-
-    // Initial render
-    renderProfile();
-
-    // Also update whenever storage changes in other tabs
-    window.addEventListener('storage', (e) => {
-        if (e.key && (e.key.startsWith(`ygj_free_${getCurrentUser()}`) || e.key === nsProfile('meta'))) renderProfile();
-    });
-
-})(); 
-</script>
+      });
+    })();
+  </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
