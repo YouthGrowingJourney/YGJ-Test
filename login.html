@@ -50,12 +50,12 @@
   <section class="intro" aria-labelledby="login-heading">
     <h2 id="login-heading">Log In</h2>
 
-    <!-- Username OR Email: wir bieten beide Felder an, Login akzeptiert entweder Username oder Email -->
+    <!-- Username OR Email: we keep the field but backend-auth is email-based -->
     <label for="login-username" style="display:block; font-weight:600;">Username</label>
-    <input type="text" id="login-username" class="login-input" placeholder="Username" aria-label="Username">
+    <input type="text" id="login-username" class="login-input" placeholder="Username (optional)" aria-label="Username">
 
     <label for="login-email" style="display:block; font-weight:600; margin-top:6px;">Or E-Mail</label>
-    <input type="email" id="login-email" class="login-input" placeholder="email@example.com" aria-label="Email (optional)">
+    <input type="email" id="login-email" class="login-input" placeholder="email@example.com" aria-label="Email (preferred)">
 
     <label for="login-password" style="display:block; font-weight:600; margin-top:6px;">Password</label>
     <input type="password" id="login-password" class="login-input" placeholder="Password" aria-label="Password">
@@ -82,43 +82,75 @@
 
   <script src="script.js"></script>
   <script>
-    // Self-contained login logic with guards to avoid double-binding if other script also binds the same button.
     (function() {
-      // Run after DOM loaded
+      // CONFIG: Backend base URL (anpassen für Prod)
+      const API_BASE = 'http://localhost:5000/api';
+      const TOKEN_KEY = 'ygj_token';
+      const USER_KEY = 'ygj_user';
+
+      // Helper: save token & user in storage (remember -> localStorage, else sessionStorage)
+      function saveAuth(token, user, remember = true) {
+        try {
+          if (remember) {
+            localStorage.setItem(TOKEN_KEY, token);
+            localStorage.setItem(USER_KEY, JSON.stringify(user));
+          } else {
+            sessionStorage.setItem(TOKEN_KEY, token);
+            sessionStorage.setItem(USER_KEY, JSON.stringify(user));
+          }
+        } catch (e) {
+          console.warn('Storage failed', e);
+        }
+      }
+
+      function clearAuthStorage() {
+        try {
+          localStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem(USER_KEY);
+          sessionStorage.removeItem(TOKEN_KEY);
+          sessionStorage.removeItem(USER_KEY);
+        } catch (e) { /* ignore */ }
+      }
+
+      // Show message
+      const messageEl = document.getElementById('login-message');
+      function showMessage(text, color = 'red') {
+        if (!messageEl) return;
+        messageEl.textContent = text;
+        messageEl.style.color = color;
+        messageEl.style.opacity = '1';
+        try {
+          messageEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, iterations: 1 });
+        } catch (e) {}
+      }
+
+      // Simple email validator
+      function isValidEmail(e) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+      }
+
+      // DOM ready
       document.addEventListener('DOMContentLoaded', () => {
         const loginSubmit = document.getElementById('login-submit');
         const usernameInput = document.getElementById('login-username');
         const emailInput = document.getElementById('login-email');
         const passwordInput = document.getElementById('login-password');
-        const messageEl = document.getElementById('login-message');
         const rememberCheckbox = document.getElementById('remember-me');
         const forgotBtn = document.getElementById('forgot-pw');
 
         if (!loginSubmit) return;
 
-        // Guard: falls schon gebunden, nicht nochmal hinzufügen
+        // guard to avoid double-binding
         if (loginSubmit.dataset.bound === '1') return;
         loginSubmit.dataset.bound = '1';
 
-        // Show message helper
-        function showMessage(text, color) {
-          messageEl.textContent = text;
-          messageEl.style.color = color;
-          messageEl.style.opacity = '1';
-          messageEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 250, iterations: 1 });
-        }
-
-        // Basic email validator
-        function isValidEmail(e) {
-          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
-        }
-
-        loginSubmit.addEventListener('click', (ev) => {
+        // click handler -> attempt login via backend
+        loginSubmit.addEventListener('click', async (ev) => {
           ev.preventDefault();
 
           const username = usernameInput.value.trim();
           const email = emailInput.value.trim();
-          const password = passwordInput.value.trim();
+          const password = passwordInput.value;
 
           // Basic checks
           if (!username && !email) {
@@ -131,68 +163,66 @@
             passwordInput.focus();
             return;
           }
-          if (email && !isValidEmail(email)) {
+
+          // If user provided username only (no @) -> backend currently requires email.
+          // Provide clear guidance instead of guessing.
+          if (!email && username && !isValidEmail(username)) {
+            showMessage('Login by username is not supported. Please enter the email you registered with.', 'red');
+            emailInput.focus();
+            return;
+          }
+
+          // If username field actually contains an email, accept it.
+          const loginEmail = email || username;
+
+          if (!isValidEmail(loginEmail)) {
             showMessage('Please enter a valid email address!', 'red');
             emailInput.focus();
             return;
           }
 
-          // Load users from localStorage
-          const users = JSON.parse(localStorage.getItem('users')) || [];
+          // Send request to backend
+          showMessage('Logging in…', '#444'); // neutral color while waiting
+          try {
+            const res = await fetch(`${API_BASE}/auth/login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: loginEmail, password })
+            });
 
-          // Find by username+password OR email+password
-          const found = users.find(u => (
-            (u.username && u.username.toLowerCase() === username.toLowerCase() && u.password === password) ||
-            (email && u.email && u.email.toLowerCase() === email.toLowerCase() && u.password === password)
-          ));
+            // try to parse JSON (backend returns JSON on errors too)
+            const data = await res.json().catch(() => ({}));
 
-          if (found) {
-            showMessage('Log-In Successful! Redirecting…', 'limegreen');
-
-            // Save session (respect remember me)
-            try {
-              if (rememberCheckbox.checked) {
-                localStorage.setItem('currentUser', found.username);
-              } else {
-                // session-like behavior: still store so nav updates, but you can later implement sessionStorage
-                localStorage.setItem('currentUser', found.username);
-              }
-            } catch (e) {
-              // fallback: ignore storage errors
-              console.warn('Could not save session:', e);
+            if (!res.ok) {
+              // Prefer backend message if present
+              const errMsg = (data && data.message) ? data.message : `Login failed (status ${res.status})`;
+              showMessage(errMsg, 'red');
+              return;
             }
 
-            // slight delay for UX
-            setTimeout(() => {
-              window.location.href = 'profile.html';
-            }, 900);
-          } else {
-            // More helpful message: check whether username/email exists to give user better hint
-            const userByName = users.find(u => u.username && u.username.toLowerCase() === username.toLowerCase());
-            const userByEmail = users.find(u => email && u.email && u.email.toLowerCase() === email.toLowerCase());
+            // success: data should contain token and user
+            if (data && data.token && data.user) {
+              // Save token & user (respect remember me)
+              saveAuth(data.token, data.user, rememberCheckbox.checked);
 
-            if ((username && userByName && !userByName.password) || (email && userByEmail && !userByEmail.password)) {
-              showMessage('Account found but no password set. Try resetting your password.', 'red');
-            } else if (username && (userByName) && !password) {
-              showMessage('Wrong password for this username.', 'red');
-            } else if (email && (userByEmail) && !password) {
-              showMessage('Wrong password for this email.', 'red');
+              showMessage('Log-In Successful! Redirecting…', 'limegreen');
+
+              // small delay for UX
+              setTimeout(() => {
+                window.location.href = 'profile.html';
+              }, 700);
             } else {
-              showMessage('Wrong Username or Password!', 'red');
+              // Unexpected shape
+              showMessage('Login succeeded but server response is unexpected.', 'red');
+              console.warn('Unexpected login response', data);
             }
-            // small shake animation (optional, purely visual)
-            try {
-              loginSubmit.animate([
-                { transform: 'translateX(0)' },
-                { transform: 'translateX(-6px)' },
-                { transform: 'translateX(6px)' },
-                { transform: 'translateX(0)' }
-              ], { duration: 300, iterations: 1 });
-            } catch (e) { /* ignore animation errors */ }
+          } catch (err) {
+            console.error('Login request failed', err);
+            showMessage('Network or server error. Try again later.', 'red');
           }
         });
 
-        // Forgot password: give helpful UX (localStorage-based simple flow)
+        // Forgot password -> gentle fallback
         if (forgotBtn) {
           forgotBtn.addEventListener('click', (ev) => {
             ev.preventDefault();
@@ -207,25 +237,30 @@
               emailInput.focus();
               return;
             }
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const user = users.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
-            if (!user) {
-              showMessage('No account found with that email.', 'red');
+
+            // We don't have a backend reset endpoint yet.
+            // Provide a clear instruction: contact support or use "Forgot password" feature when available.
+            // For local-demo users that used localStorage, we keep the old flow but only if a local copy exists.
+            const usersLocal = JSON.parse(localStorage.getItem('users') || '[]');
+            const localUser = usersLocal.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
+
+            if (localUser) {
+              const newPw = prompt('Local demo detected. Enter a new password (min 8 chars):');
+              if (!newPw || newPw.length < 8) {
+                showMessage('Password reset cancelled or too short.', 'red');
+                return;
+              }
+              localUser.password = newPw;
+              localStorage.setItem('users', JSON.stringify(usersLocal));
+              showMessage('Password reset successful (local demo). You can log in now.', 'limegreen');
               return;
             }
 
-            // Very simple reset flow: ask for new password (prompt fallback) — safe enough for local demo
-            const newPw = prompt('Enter a new password (min 8 chars):');
-            if (!newPw || newPw.length < 8) {
-              showMessage('Password reset cancelled or too short.', 'red');
-              return;
-            }
-            user.password = newPw;
-            localStorage.setItem('users', JSON.stringify(users));
-            showMessage('Password reset successful. You can now log in.', 'limegreen');
+            // Otherwise instruct the user (production path)
+            showMessage('No local demo account found. Please use the password reset flow on the website or contact support.', 'red');
           });
         }
-      }); // DOMContentLoaded
+      }); // DOMContentLoaded end
     })();
   </script>
 </body>
