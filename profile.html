@@ -116,20 +116,20 @@
 
       async function fetchProfile(token) {
         try {
-          const res = await fetch(\`\${API_BASE}/auth/me\`, {
-            headers: {
-              'Authorization': 'Bearer ' + token
-            }
-          });
-          if (!res.ok) return null;
-          const data = await res.json();
-          return data;
-        } catch (err) {
-          console.error('Profile fetch failed', err);
-          return null;
-        }
-      }
+         const res = await fetch(`${API_BASE}/auth/me`, {
+    headers: {
+      'Authorization': 'Bearer ' + token
+    }
+  });
 
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data;
+
+} catch (err) {
+  console.error('Profile fetch failed', err);
+  return null;
+}
       function redirectToLogin() {
         window.location.href = 'login.html';
       }
