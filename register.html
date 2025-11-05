@@ -9,7 +9,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    /* === Kleine optische Verfeinerungen für das Register-Form === */
     .intro {
       text-align: center;
       margin-top: 60px;
@@ -90,7 +89,7 @@
     <h2 id="register-heading">Create Account</h2>
 
     <label for="new-username" style="display:block; font-weight:600;">Username</label>
-    <input type="text" id="new-username" placeholder="Username" class="login-input" aria-label="Username" autocomplete="username">
+    <input type="text" id="new-username" placeholder="Username (3–20 characters)" class="login-input" aria-label="Username" autocomplete="username">
 
     <div>
       <label for="new-email" style="display:block; font-weight:600; margin-top:6px;">Email:</label>
@@ -114,19 +113,14 @@
   <script src="script.js"></script>
   <script>
     (function() {
-      // CONFIG
-      const API_BASE = 'http://localhost:5000/api'; // <-- in production: replace with your real API URL
-      const TOKEN_KEY = 'ygj_token';
-      const USER_KEY = 'ygj_user';
+      const API_BASE = 'http://localhost:5000/api'; // Production: your live API URL
 
-      // Helpers
       function showMessage(el, text, color = 'red', flash = false) {
         if (!el) return;
         el.textContent = text;
         el.style.color = color;
         if (flash) {
           el.classList.remove('error-flash');
-          // trigger reflow to restart animation
           void el.offsetWidth;
           el.classList.add('error-flash');
         } else {
@@ -138,15 +132,6 @@
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
       }
 
-      function saveAuth(token, user) {
-        try {
-          localStorage.setItem(TOKEN_KEY, token);
-          localStorage.setItem(USER_KEY, JSON.stringify(user));
-        } catch (e) {
-          console.warn('Could not save auth to storage', e);
-        }
-      }
-
       document.addEventListener('DOMContentLoaded', () => {
         const usernameInput = document.getElementById('new-username');
         const emailInput = document.getElementById('new-email');
@@ -155,18 +140,14 @@
         const messageEl = document.getElementById('register-message');
 
         if (!registerBtn) return;
-
-        // avoid double-binding
         if (registerBtn.dataset.bound === '1') return;
         registerBtn.dataset.bound = '1';
 
-        // Set focus on first field
         usernameInput.focus();
 
         registerBtn.addEventListener('click', async (ev) => {
           ev.preventDefault();
 
-          // reset styles/messages
           usernameInput.style.borderColor = '';
           emailInput.style.borderColor = '';
           passwordInput.style.borderColor = '';
@@ -176,12 +157,19 @@
           const email = emailInput.value.trim();
           const password = passwordInput.value;
 
-          // Client-side validation
+          // Validation
           if (!username || !email || !password) {
             if (!username) usernameInput.style.borderColor = 'red';
             if (!email) emailInput.style.borderColor = 'red';
             if (!password) passwordInput.style.borderColor = 'red';
             showMessage(messageEl, 'Please fill out all fields!', 'red', true);
+            return;
+          }
+
+          if (username.length < 3 || username.length > 20) {
+            usernameInput.style.borderColor = 'red';
+            showMessage(messageEl, 'Username must be between 3 and 20 characters!', 'red', true);
+            usernameInput.focus();
             return;
           }
 
@@ -199,18 +187,13 @@
             return;
           }
 
-          // Disable button to prevent duplicate submissions
           registerBtn.disabled = true;
           registerBtn.setAttribute('aria-busy', 'true');
           const originalBtnText = registerBtn.innerHTML;
           registerBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating...';
 
           try {
-            const payload = {
-              displayName: username,
-              email,
-              password
-            };
+            const payload = { displayName: username, email, password };
 
             const res = await fetch(`${API_BASE}/auth/register`, {
               method: 'POST',
@@ -218,44 +201,24 @@
               body: JSON.stringify(payload)
             });
 
-            // parse JSON safely
             const data = await res.json().catch(() => ({}));
 
             if (!res.ok) {
-              // backend provided message?
               const err = data && data.message ? data.message : `Registration failed (status ${res.status})`;
-              // if conflict (email exists) map message to fields
-              if (res.status === 400 && /email/i.test(err)) {
-                emailInput.style.borderColor = 'red';
-              }
-              if (res.status === 400 && /displayName|username/i.test(err)) {
-                usernameInput.style.borderColor = 'red';
-              }
+              if (res.status === 400 && /email/i.test(err)) emailInput.style.borderColor = 'red';
+              if (res.status === 400 && /displayName|username/i.test(err)) usernameInput.style.borderColor = 'red';
               showMessage(messageEl, err, 'red', true);
               return;
             }
 
-            // Success: expect token + user
-            if (data && data.token && data.user) {
-              // save token + user
-              saveAuth(data.token, data.user);
+            // Success – no localStorage, rely on backend session
+            showMessage(messageEl, '✅ Registration successful! Redirecting...', 'limegreen', false);
+            setTimeout(() => window.location.href = 'profile.html', 800);
 
-              showMessage(messageEl, '✅ Registration successful — logged in!', 'limegreen', false);
-
-              // small delay for UX then redirect to profile
-              setTimeout(() => {
-                window.location.href = 'profile.html';
-              }, 800);
-            } else {
-              // Unexpected response shape
-              showMessage(messageEl, 'Registration succeeded but server returned unexpected response.', 'red', true);
-              console.warn('Unexpected register response:', data);
-            }
           } catch (err) {
             console.error('Registration request failed', err);
             showMessage(messageEl, 'Network or server error. Try again later.', 'red', true);
           } finally {
-            // Re-enable button
             registerBtn.disabled = false;
             registerBtn.removeAttribute('aria-busy');
             registerBtn.innerHTML = originalBtnText;
