@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>YGJ-Log-In</title>
+  <title>YGJ - Log In</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    /* Kleine, sichere Ergänzungen für bessere Form-Optik (überschreibt nichts Wichtiges) */
     .intro { max-width: 420px; margin: 36px auto; padding: 20px; border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,0.08); background: rgba(255,255,255,0.02); }
     .intro h2 { margin-bottom: 16px; font-size: 1.6rem; }
     .login-input, .input-group input { width: 100%; padding: 10px 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; font-size: 1rem; box-sizing: border-box; }
@@ -31,7 +30,9 @@
     <button class="btn login-header-btn" onclick="window.location.href='login.html'">
       <i class="fa-solid fa-right-to-bracket"></i> Log In
     </button>
-    <button class="btn" onclick="window.location.href='register.html'"><i class="fa-solid fa-user-plus"></i> Sign Up</button>
+    <button class="btn" onclick="window.location.href='register.html'">
+      <i class="fa-solid fa-user-plus"></i> Sign Up
+    </button>
     <button id="theme-toggle" class="theme-btn" aria-label="Switch theme" style="margin-right: 10px; padding: 10px 12px 12px 12px;">🌙</button>
     <button id="menu-toggle" class="menu-btn">&#9776;</button>
   </header>
@@ -50,15 +51,11 @@
   <section class="intro" aria-labelledby="login-heading">
     <h2 id="login-heading">Log In</h2>
 
-    <!-- Username OR Email: we keep the field but backend-auth is email-based -->
-    <label for="login-username" style="display:block; font-weight:600;">Username</label>
-    <input type="text" id="login-username" class="login-input" placeholder="Username (optional)" aria-label="Username">
-
-    <label for="login-email" style="display:block; font-weight:600; margin-top:6px;">Or E-Mail</label>
-    <input type="email" id="login-email" class="login-input" placeholder="email@example.com" aria-label="Email (preferred)">
+    <label for="login-email" style="display:block; font-weight:600;">E-Mail</label>
+    <input type="email" id="login-email" class="login-input" placeholder="email@example.com" aria-label="Email" required>
 
     <label for="login-password" style="display:block; font-weight:600; margin-top:6px;">Password</label>
-    <input type="password" id="login-password" class="login-input" placeholder="Password" aria-label="Password">
+    <input type="password" id="login-password" class="login-input" placeholder="Password" aria-label="Password" required>
 
     <div class="form-row">
       <button class="btn" id="login-submit" aria-live="polite">Confirm</button>
@@ -80,188 +77,76 @@
     &copy; Youth Growing Journey – built for a strong generation.
   </footer>
 
-  <script src="script.js"></script>
   <script>
-    (function() {
-      // CONFIG: Backend base URL (anpassen für Prod)
+    document.addEventListener('DOMContentLoaded', () => {
       const API_BASE = 'http://localhost:5000/api';
       const TOKEN_KEY = 'ygj_token';
       const USER_KEY = 'ygj_user';
-
-      // Helper: save token & user in storage (remember -> localStorage, else sessionStorage)
-      function saveAuth(token, user, remember = true) {
-        try {
-          if (remember) {
-            localStorage.setItem(TOKEN_KEY, token);
-            localStorage.setItem(USER_KEY, JSON.stringify(user));
-          } else {
-            sessionStorage.setItem(TOKEN_KEY, token);
-            sessionStorage.setItem(USER_KEY, JSON.stringify(user));
-          }
-        } catch (e) {
-          console.warn('Storage failed', e);
-        }
-      }
-
-      function clearAuthStorage() {
-        try {
-          localStorage.removeItem(TOKEN_KEY);
-          localStorage.removeItem(USER_KEY);
-          sessionStorage.removeItem(TOKEN_KEY);
-          sessionStorage.removeItem(USER_KEY);
-        } catch (e) { /* ignore */ }
-      }
-
-      // Show message
+      const emailInput = document.getElementById('login-email');
+      const passwordInput = document.getElementById('login-password');
+      const loginSubmit = document.getElementById('login-submit');
+      const rememberCheckbox = document.getElementById('remember-me');
       const messageEl = document.getElementById('login-message');
-      function showMessage(text, color = 'red') {
-        if (!messageEl) return;
+
+      const showMessage = (text, color = 'red') => {
         messageEl.textContent = text;
         messageEl.style.color = color;
-        messageEl.style.opacity = '1';
-        try {
-          messageEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, iterations: 1 });
-        } catch (e) {}
-      }
+      };
 
-      // Simple email validator
-      function isValidEmail(e) {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
-      }
+      const saveAuth = (token, user, remember = true) => {
+        const storage = remember ? localStorage : sessionStorage;
+        storage.setItem(TOKEN_KEY, token);
+        storage.setItem(USER_KEY, JSON.stringify(user));
+      };
 
-      // DOM ready
-      document.addEventListener('DOMContentLoaded', () => {
-        const loginSubmit = document.getElementById('login-submit');
-        const usernameInput = document.getElementById('login-username');
-        const emailInput = document.getElementById('login-email');
-        const passwordInput = document.getElementById('login-password');
-        const rememberCheckbox = document.getElementById('remember-me');
-        const forgotBtn = document.getElementById('forgot-pw');
+      loginSubmit.addEventListener('click', async (e) => {
+        e.preventDefault();
 
-        if (!loginSubmit) return;
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
 
-        // guard to avoid double-binding
-        if (loginSubmit.dataset.bound === '1') return;
-        loginSubmit.dataset.bound = '1';
-
-        // click handler -> attempt login via backend
-        loginSubmit.addEventListener('click', async (ev) => {
-          ev.preventDefault();
-
-          const username = usernameInput.value.trim();
-          const email = emailInput.value.trim();
-          const password = passwordInput.value;
-
-          // Basic checks
-          if (!username && !email) {
-            showMessage('Please fill out everything (username or email)!', 'red');
-            usernameInput.focus();
-            return;
-          }
-          if (!password) {
-            showMessage('Please enter your password!', 'red');
-            passwordInput.focus();
-            return;
-          }
-
-          // If user provided username only (no @) -> backend currently requires email.
-          // Provide clear guidance instead of guessing.
-          if (!email && username && !isValidEmail(username)) {
-            showMessage('Login by username is not supported. Please enter the email you registered with.', 'red');
-            emailInput.focus();
-            return;
-          }
-
-          // If username field actually contains an email, accept it.
-          const loginEmail = email || username;
-
-          if (!isValidEmail(loginEmail)) {
-            showMessage('Please enter a valid email address!', 'red');
-            emailInput.focus();
-            return;
-          }
-
-          // Send request to backend
-          showMessage('Logging in…', '#444'); // neutral color while waiting
-          try {
-            const res = await fetch(`${API_BASE}/auth/login`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: loginEmail, password })
-            });
-
-            // try to parse JSON (backend returns JSON on errors too)
-            const data = await res.json().catch(() => ({}));
-
-            if (!res.ok) {
-              // Prefer backend message if present
-              const errMsg = (data && data.message) ? data.message : `Login failed (status ${res.status})`;
-              showMessage(errMsg, 'red');
-              return;
-            }
-
-            // success: data should contain token and user
-            if (data && data.token && data.user) {
-              // Save token & user (respect remember me)
-              saveAuth(data.token, data.user, rememberCheckbox.checked);
-
-              showMessage('Log-In Successful! Redirecting…', 'limegreen');
-
-              // small delay for UX
-              setTimeout(() => {
-                window.location.href = 'profile.html';
-              }, 700);
-            } else {
-              // Unexpected shape
-              showMessage('Login succeeded but server response is unexpected.', 'red');
-              console.warn('Unexpected login response', data);
-            }
-          } catch (err) {
-            console.error('Login request failed', err);
-            showMessage('Network or server error. Try again later.', 'red');
-          }
-        });
-
-        // Forgot password -> gentle fallback
-        if (forgotBtn) {
-          forgotBtn.addEventListener('click', (ev) => {
-            ev.preventDefault();
-            const email = emailInput.value.trim();
-            if (!email) {
-              showMessage('Enter your account email above to reset password.', 'red');
-              emailInput.focus();
-              return;
-            }
-            if (!isValidEmail(email)) {
-              showMessage('Please enter a valid email to reset.', 'red');
-              emailInput.focus();
-              return;
-            }
-
-            // We don't have a backend reset endpoint yet.
-            // Provide a clear instruction: contact support or use "Forgot password" feature when available.
-            // For local-demo users that used localStorage, we keep the old flow but only if a local copy exists.
-            const usersLocal = JSON.parse(localStorage.getItem('users') || '[]');
-            const localUser = usersLocal.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
-
-            if (localUser) {
-              const newPw = prompt('Local demo detected. Enter a new password (min 8 chars):');
-              if (!newPw || newPw.length < 8) {
-                showMessage('Password reset cancelled or too short.', 'red');
-                return;
-              }
-              localUser.password = newPw;
-              localStorage.setItem('users', JSON.stringify(usersLocal));
-              showMessage('Password reset successful (local demo). You can log in now.', 'limegreen');
-              return;
-            }
-
-            // Otherwise instruct the user (production path)
-            showMessage('No local demo account found. Please use the password reset flow on the website or contact support.', 'red');
-          });
+        if (!email || !password) {
+          showMessage('Please fill out all fields.', 'red');
+          return;
         }
-      }); // DOMContentLoaded end
-    })();
+
+        showMessage('Logging in...', '#555');
+
+        try {
+          const res = await fetch(`${API_BASE}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            showMessage(data.message || 'Invalid credentials. Try again.', 'red');
+            return;
+          }
+
+          if (data.token && data.user) {
+            saveAuth(data.token, data.user, rememberCheckbox.checked);
+            showMessage('Login successful! Redirecting...', 'limegreen');
+
+            setTimeout(() => {
+              window.location.href = 'profile.html';
+            }, 800);
+          } else {
+            showMessage('Unexpected response from server.', 'red');
+          }
+        } catch (err) {
+          console.error(err);
+          showMessage('Server not reachable. Try again later.', 'red');
+        }
+      });
+
+      // Password reset (placeholder)
+      document.getElementById('forgot-pw').addEventListener('click', () => {
+        showMessage('Password reset feature is not available yet.', '#555');
+      });
+    });
   </script>
 </body>
 </html>
