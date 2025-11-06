@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>YGJ - Log In</title>
+  <title>YGJ-Log-In</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
+    /* Kleine, sichere Ergänzungen für bessere Form-Optik (überschreibt nichts Wichtiges) */
     .intro { max-width: 420px; margin: 36px auto; padding: 20px; border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,0.08); background: rgba(255,255,255,0.02); }
     .intro h2 { margin-bottom: 16px; font-size: 1.6rem; }
     .login-input, .input-group input { width: 100%; padding: 10px 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; font-size: 1rem; box-sizing: border-box; }
@@ -22,6 +23,7 @@
   </style>
 </head>
 <body>
+  <!-- === HEADER (wiederhergestellt wie ursprünglich) === -->
   <header>
     <a href="index.html" class="home-btn">
       <img src="https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/home-page-white-icon.png" alt="Home">
@@ -30,13 +32,12 @@
     <button class="btn login-header-btn" onclick="window.location.href='login.html'">
       <i class="fa-solid fa-right-to-bracket"></i> Log In
     </button>
-    <button class="btn" onclick="window.location.href='register.html'">
-      <i class="fa-solid fa-user-plus"></i> Sign Up
-    </button>
+    <button class="btn" onclick="window.location.href='register.html'"><i class="fa-solid fa-user-plus"></i> Sign Up</button>
     <button id="theme-toggle" class="theme-btn" aria-label="Switch theme" style="margin-right: 10px; padding: 10px 12px 12px 12px;">🌙</button>
     <button id="menu-toggle" class="menu-btn">&#9776;</button>
   </header>
 
+  <!-- Sidebar (original) -->
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <button id="close-sidebar" class="close-btn">&times;</button>
@@ -48,14 +49,19 @@
     </div>
   </div>
 
+  <!-- === LOGIN FORM (Username-Feld ist wieder da) === -->
   <section class="intro" aria-labelledby="login-heading">
     <h2 id="login-heading">Log In</h2>
 
-    <label for="login-email" style="display:block; font-weight:600;">E-Mail</label>
-    <input type="email" id="login-email" class="login-input" placeholder="email@example.com" aria-label="Email" required>
+    <!-- Username OR Email: we keep the field but backend-auth is email-based -->
+    <label for="login-username" style="display:block; font-weight:600;">Username</label>
+    <input type="text" id="login-username" class="login-input" placeholder="Username (optional)" aria-label="Username">
+
+    <label for="login-email" style="display:block; font-weight:600; margin-top:6px;">Or E-Mail</label>
+    <input type="email" id="login-email" class="login-input" placeholder="email@example.com" aria-label="Email (preferred)">
 
     <label for="login-password" style="display:block; font-weight:600; margin-top:6px;">Password</label>
-    <input type="password" id="login-password" class="login-input" placeholder="Password" aria-label="Password" required>
+    <input type="password" id="login-password" class="login-input" placeholder="Password" aria-label="Password">
 
     <div class="form-row">
       <button class="btn" id="login-submit" aria-live="polite">Confirm</button>
@@ -77,76 +83,160 @@
     &copy; Youth Growing Journey – built for a strong generation.
   </footer>
 
+  <!-- === SCRIPT === -->
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    (function() {
+      // CONFIG: Backend base URL (anpassen für Prod)
       const API_BASE = 'http://localhost:5000/api';
       const TOKEN_KEY = 'ygj_token';
       const USER_KEY = 'ygj_user';
-      const emailInput = document.getElementById('login-email');
-      const passwordInput = document.getElementById('login-password');
-      const loginSubmit = document.getElementById('login-submit');
-      const rememberCheckbox = document.getElementById('remember-me');
-      const messageEl = document.getElementById('login-message');
 
-      const showMessage = (text, color = 'red') => {
+      // Helper: session storage only (no localStorage used by default)
+      function saveToSession(token, user) {
+        try {
+          sessionStorage.setItem(TOKEN_KEY, token);
+          sessionStorage.setItem(USER_KEY, JSON.stringify(user));
+        } catch (e) {
+          console.warn('Session storage failed', e);
+        }
+      }
+
+      function clearSession() {
+        try {
+          sessionStorage.removeItem(TOKEN_KEY);
+          sessionStorage.removeItem(USER_KEY);
+        } catch (e) {}
+      }
+
+      // UI helpers
+      const messageEl = document.getElementById('login-message');
+      function showMessage(text, color='red') {
+        if (!messageEl) return;
         messageEl.textContent = text;
         messageEl.style.color = color;
-      };
+      }
 
-      const saveAuth = (token, user, remember = true) => {
-        const storage = remember ? localStorage : sessionStorage;
-        storage.setItem(TOKEN_KEY, token);
-        storage.setItem(USER_KEY, JSON.stringify(user));
-      };
+      function isValidEmail(e) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+      }
 
-      loginSubmit.addEventListener('click', async (e) => {
-        e.preventDefault();
+      document.addEventListener('DOMContentLoaded', () => {
+        const loginSubmit = document.getElementById('login-submit');
+        const usernameInput = document.getElementById('login-username');
+        const emailInput = document.getElementById('login-email');
+        const passwordInput = document.getElementById('login-password');
+        const rememberCheckbox = document.getElementById('remember-me');
+        const forgotBtn = document.getElementById('forgot-pw');
 
-        const email = emailInput.value.trim();
-        const password = passwordInput.value.trim();
+        if (!loginSubmit) return;
+        if (loginSubmit.dataset.bound === '1') return;
+        loginSubmit.dataset.bound = '1';
 
-        if (!email || !password) {
-          showMessage('Please fill out all fields.', 'red');
-          return;
-        }
+        loginSubmit.addEventListener('click', async (ev) => {
+          ev.preventDefault();
 
-        showMessage('Logging in...', '#555');
+          // Inputs
+          const username = (usernameInput.value || '').trim();
+          const email = (emailInput.value || '').trim();
+          const password = (passwordInput.value || '').trim();
+          const remember = !!rememberCheckbox.checked;
 
-        try {
-          const res = await fetch(`${API_BASE}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-          });
-
-          const data = await res.json();
-
-          if (!res.ok) {
-            showMessage(data.message || 'Invalid credentials. Try again.', 'red');
+          // Basic checks
+          if (!username && !email) {
+            showMessage('Please enter username or email.', 'red');
+            return;
+          }
+          if (!password) {
+            showMessage('Please enter your password.', 'red');
             return;
           }
 
-          if (data.token && data.user) {
-            saveAuth(data.token, data.user, rememberCheckbox.checked);
-            showMessage('Login successful! Redirecting...', 'limegreen');
+          // Determine loginEmail: prefer email field, else if username looks like an email use it
+          const loginEmail = email || (isValidEmail(username) ? username : null);
+          if (!loginEmail) {
+            // We require email-based login for security; guide the user
+            showMessage('Login by username is not supported. Please use your registered email.', 'red');
+            return;
+          }
+
+          // Prepare payload. If remember=true, backend is expected to set an HttpOnly cookie.
+          const payload = { email: loginEmail, password, remember };
+
+          // UI feedback
+          showMessage('Logging in…', '#444');
+          loginSubmit.disabled = true;
+          const originalText = loginSubmit.innerHTML;
+          loginSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Logging in...';
+
+          try {
+            const res = await fetch(`${API_BASE}/auth/login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include', // important if backend sets cookies (HttpOnly)
+              body: JSON.stringify(payload)
+            });
+
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+              // Prefer backend message if present
+              const errMsg = (data && (data.message || data.error)) ? (data.message || data.error) : `Login failed (status ${res.status})`;
+              showMessage(errMsg, 'red');
+              return;
+            }
+
+            // If backend set HttpOnly cookie (remember=true), token may NOT be in the JSON.
+            // Accept both shapes:
+            // 1) { token, user } -> client stores token/session
+            // 2) { success: true, user } + cookie set -> client should NOT store token in JS (cookie used)
+            if (data && data.token && data.user) {
+              // No server cookie: store in sessionStorage (no localStorage)
+              saveToSession(data.token, data.user);
+            } else if (data && data.user) {
+              // Server returned user; it likely set an HttpOnly cookie (remember flow). Do NOT store token in JS.
+              // Still store minimal user info for UI.
+              try {
+                sessionStorage.setItem(USER_KEY, JSON.stringify(data.user));
+              } catch (e) { /* ignore */ }
+            } else {
+              showMessage('Unexpected server response. Contact support.', 'red');
+              console.warn('Unexpected login response', data);
+              return;
+            }
+
+            showMessage('Login successful — Weiterleitung…', 'limegreen');
 
             setTimeout(() => {
               window.location.href = 'profile.html';
-            }, 800);
-          } else {
-            showMessage('Unexpected response from server.', 'red');
+            }, 700);
+
+          } catch (err) {
+            console.error('Login request failed', err);
+            showMessage('Network or server error. Try again later.', 'red');
+          } finally {
+            loginSubmit.disabled = false;
+            loginSubmit.innerHTML = originalText;
           }
-        } catch (err) {
-          console.error(err);
-          showMessage('Server not reachable. Try again later.', 'red');
+        });
+
+        // Forgot password (UX-only until backend endpoint exists)
+        if (forgotBtn) {
+          forgotBtn.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            const email = (emailInput.value || usernameInput.value || '').trim();
+            if (!email) {
+              showMessage('Enter your account email above to reset password.', 'red');
+              return;
+            }
+            if (!isValidEmail(email)) {
+              showMessage('Please enter a valid email to reset.', 'red');
+              return;
+            }
+            showMessage('Password reset flow not implemented yet. Contact support.', 'red');
+          });
         }
       });
-
-      // Password reset (placeholder)
-      document.getElementById('forgot-pw').addEventListener('click', () => {
-        showMessage('Password reset feature is not available yet.', '#555');
-      });
-    });
+    })();
   </script>
 </body>
 </html>
