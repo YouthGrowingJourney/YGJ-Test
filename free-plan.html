@@ -3,12 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Free Plan – YGJ (Backend-powered)</title>
+  <title>Free Plan – YGJ</title>
   <!-- Reuse your global style + fonts + icons -->
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <!-- jsPDF for client-side PDF export -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <style>
     /* Page-specific polish that sits on top of your style.css */
     main {
@@ -60,54 +62,80 @@
     .divider { height:1px; background: rgba(255,255,255,0.1); margin: 1rem 0; }
     .pdf-note { font-size:.9rem; opacity:.85; margin-top:.35rem; }
     .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.6);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1100;
-    }
-    .modal-content {
-      background: white;
-      padding: 2rem;
-      border-radius: 12px;
-      text-align: center;
-      max-width: 300px;
-      box-shadow: 0 0 20px #e0c280;
-      color: #e0c280;
-    }
-    body.dark .modal-content { background: #333; color: #fff; }
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+}
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  max-width: 300px;
+  box-shadow: 0 0 20px #e0c280;
+  color: #e0c280;
+}
+.modal-content p {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+/* Animation (optional, für Premium-Vibe) */
+@keyframes modal-pop {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+body.dark .modal-content {
+  background: #333;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  max-width: 300px;
+  box-shadow: 0 0 20px #e0c280;
+  color: #fff;
+}
   </style>
 </head>
 <body>
-  <!-- Header -->
+  <!-- Header (keeps visual consistency with your site) -->
   <header>
     <a href="index.html" class="home-btn" title="Home">
       <img src="https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/home-page-white-icon.png" alt="Home">
     </a>
     <h1>Youth Growing Journey – Free Plan</h1>
-    <button id="theme-toggle" class="theme-btn" aria-label="Switch theme" style="margin-right: 10px; padding: 10px 12px 12px 12px">🌙</button>
+   <button id="theme-toggle" class="theme-btn" aria-label="Switch theme" style="margin-right: 10px; padding: 10px 12px 12px 12px">🌙</button>
     <button id="menu-toggle" class="menu-btn" aria-label="Open menu">&#9776;</button>
   </header>
 
-  <!-- Sidebar -->
+  <!-- Sidebar (same structure as elsewhere) -->
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <button id="close-sidebar" class="close-btn" aria-label="Close sidebar">&times;</button>
     </div>
     <div class="sidebar-content">
-      <button id="profile-btn"><i class="fa-solid fa-user"></i> Profile</button>
-      <button id="about-btn"><i class="fa-solid fa-info-circle"></i> About Us</button>
-      <button id="contact-btn"><i class="fa-solid fa-envelope"></i> Contact Us</button>
-      <button id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Log Out</button>
+      <button onclick="window.location.href='profile.html'">
+        <i class="fa-solid fa-user"></i> Profile
+      </button>
+      <button onclick="window.location.href='about-us.html'">
+        <i class="fa-solid fa-info-circle"></i> About Us
+      </button>
+      <button onclick="window.location.href='contact.html'">
+        <i class="fa-solid fa-envelope"></i> Contact Us
+      </button>
+      <button id="logout-btn">
+        <i class="fa-solid fa-right-from-bracket"></i> Log Out
+      </button>
     </div>
   </div>
 
   <main>
+    <!-- Hero / Value Proposition -->
     <section class="card" aria-labelledby="hero-title">
       <h2 id="hero-title">Kickstart your growth – for free</h2>
       <p class="muted">Daily inspiration, simple tracking, and clean progress exports. Build habits, stack wins, and keep moving forward.</p>
@@ -120,6 +148,7 @@
     </section>
 
     <div class="grid">
+      <!-- Daily Motivation -->
       <section class="card" aria-labelledby="motivation-title">
         <h2 id="motivation-title"><i class="fa-solid fa-bolt"></i> Daily Quote</h2>
         <p id="daily-quote" class="muted">Loading your quote…</p>
@@ -130,6 +159,7 @@
         </div>
       </section>
 
+      <!-- Tasks / Habit Tracker -->
       <section class="card" aria-labelledby="tasks-title">
         <h2 id="tasks-title"><i class="fa-solid fa-list-check"></i> Your Tasks</h2>
         <div class="tasks-controls">
@@ -144,6 +174,7 @@
         <p class="notice">Progress: <strong id="progress">0%</strong></p>
       </section>
 
+      <!-- Export / PDF -->
       <section class="card" aria-labelledby="export-title">
         <h2 id="export-title"><i class="fa-solid fa-file-export"></i>Downloads</h2>
         <p class="muted">Save your current tasks, completion status, and streak as a personal PDF.</p>
@@ -162,12 +193,25 @@
     &copy; Youth Growing Journey – Free Plan
   </footer>
 
+  <!-- Reuse your global script for shared behaviors -->
+  <script src="script.js"></script>
+
+  <!-- Page-specific logic kept isolated to avoid conflicts -->
   <script>
-  // ---------- Backend-driven Free Plan (no localStorage) ----------
-  (function(){
-    // Helpers
-    const $ = sel => document.querySelector(sel);
-    const $$ = sel => Array.from(document.querySelectorAll(sel));
+     document.addEventListener("DOMContentLoaded", () => {
+    const currentUser = localStorage.getItem("currentUser");
+    if (!currentUser || currentUser === "null") {
+      alert("⚠️You have to log-in to use the Free-Plan!");
+      window.location.href = "login.html";
+    }
+  });
+  (function() {
+    // ---------- Helpers & Storage Namespacing ----------
+    const getCurrentUser = () => localStorage.getItem('currentUser') || 'guest';
+    const ns = (key) => `ygj_free_${getCurrentUser()}_${key}`; // per-user if logged in, else guest
+
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
     const quoteEl = $('#daily-quote');
     const kpiTasks = $('#kpi-tasks');
@@ -178,34 +222,7 @@
     const progressBar = $('#progress-bar');
     const checkinStatus = $('#checkin-status');
 
-    // API base – change if your API sits under different path
-    const API_BASE = '/api/freeplan';
-    const AUTH_ME = '/api/auth/me';
-
-    // --- Auth check on load ---
-    async function ensureAuth() {
-      try {
-        const res = await fetch(AUTH_ME, { credentials: 'include' });
-        if (!res.ok) throw new Error('unauth');
-        const data = await res.json();
-        return data; // user object
-      } catch (e) {
-        alert('You have to log in to use the free plan');
-        window.location.href = '/login.html';
-        throw e;
-      }
-    }
-
-    // --- Quotes (backend) ---
-    async function fetchQuote() {
-      try {
-        const res = await fetch(API_BASE + '/quote', { credentials: 'include' });
-        if (!res.ok) throw new Error('no-quote');
-        const j = await res.json();
-        quoteEl.textContent = j.quote;
-      } catch (e) {
-        // Fallback: small built-in list if backend missing
-        const fallback = [
+    const quotes = [
     "Imagination is more important than knowledge. For knowledge is limited. ~Albert Einstein",
     "When something is important enough, you do it even if the odds are not in your favor. ~Elon Musk",
     "The people who are crazy enough to think they can change the world are the ones who do. ~ Steve Jobs",
@@ -238,115 +255,31 @@
     "Always deliver more than expected. ~Larry Page", 
     "If you don’t give up, you still have a chance. Giving up is the greatest failure. ~Jack Ma",
     "Do the hard work, especially when you don't feel like it. ~Hamza Ahmed"
-        ];
-        quoteEl.textContent = fallback[Math.floor(Math.random() * fallback.length)];
-      }
+    ];
+
+    function randomQuote() {
+      const q = quotes[Math.floor(Math.random() * quotes.length)];
+      quoteEl.textContent = q;
     }
 
-    // --- Tasks: load/save via API ---
-    let tasksCache = [];
-
-    async function loadTasks() {
-      try {
-        const res = await fetch(API_BASE + '/tasks', { credentials: 'include' });
-        if (!res.ok) throw new Error('failed');
-        tasksCache = await res.json();
-        renderTasks();
-        updateKPIs();
-      } catch (e) {
-        console.error('Could not load tasks', e);
-        alert('Try again later');
-      }
+    // ---------- Tasks State ----------
+    function loadTasks() {
+      try { return JSON.parse(localStorage.getItem(ns('tasks')) || '[]'); }
+      catch { return []; }
     }
-
-    async function addTask(text) {
-      if (!text || text.trim() === '') return;
-      try {
-        const res = await fetch(API_BASE + '/tasks', {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text })
-        });
-        if (!res.ok) throw new Error('add-fail');
-        tasksCache = await res.json();
-        renderTasks();
-        updateKPIs();
-      } catch (e) {
-        console.error(e);
-        alert('Could not add task');
-      }
-    }
-
-    async function toggleDone(index) {
-      try {
-        const task = tasksCache[index];
-        if (!task) return;
-        const res = await fetch(API_BASE + `/tasks/${index}`, {
-          method: 'PATCH',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ done: !task.done })
-        });
-        if (!res.ok) throw new Error('toggle-fail');
-        tasksCache = await res.json();
-        renderTasks();
-        updateKPIs();
-        if (tasksCache[index] && tasksCache[index].done) doCheckIn();
-      } catch (e) {
-        console.error(e);
-        alert('Could not refresh');
-      }
-    }
-
-    async function removeTask(index) {
-      try {
-        const res = await fetch(API_BASE + `/tasks/${index}`, {
-          method: 'DELETE',
-          credentials: 'include'
-        });
-        if (!res.ok) throw new Error('del-fail');
-        tasksCache = await res.json();
-        renderTasks();
-        updateKPIs();
-      } catch (e) {
-        console.error(e);
-        alert('Could not delete task');
-      }
-    }
-
-    async function moveTask(index, delta) {
-      try {
-        // Reorder handled client-side and sent in one request
-        const newIndex = index + delta;
-        if (newIndex < 0 || newIndex >= tasksCache.length) return;
-        const reordered = tasksCache.slice();
-        const [item] = reordered.splice(index, 1);
-        reordered.splice(newIndex, 0, item);
-        // Send reorder to backend
-        const res = await fetch(API_BASE + '/tasks/reorder', {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tasks: reordered })
-        });
-        if (!res.ok) throw new Error('reorder-fail');
-        tasksCache = await res.json();
-        renderTasks();
-        updateKPIs();
-      } catch (e) {
-        console.error(e);
-        alert('Could not move task');
-      }
+    function saveTasks(tasks) {
+      localStorage.setItem(ns('tasks'), JSON.stringify(tasks));
+      updateKPIs(tasks);
     }
 
     function renderTasks() {
       const list = $('#task-list');
+      const tasks = loadTasks();
       list.innerHTML = '';
-      tasksCache.forEach((t, i) => {
+      tasks.forEach((t, i) => {
         const li = document.createElement('li');
-        if (t.done) li.classList.add('done');
         li.dataset.index = i;
+        if (t.done) li.classList.add('done');
         li.innerHTML = `
           <input type="checkbox" ${t.done ? 'checked' : ''} aria-label="Toggle done" />
           <span class="task-text">${escapeHtml(t.text)}</span>
@@ -359,6 +292,7 @@
         list.appendChild(li);
       });
       attachTaskHandlers();
+      updateKPIs(tasks);
     }
 
     function attachTaskHandlers() {
@@ -371,111 +305,238 @@
       });
     }
 
-    // --- KPIs ---
-    function updateKPIs() {
-      const total = tasksCache.length;
-      const done = tasksCache.filter(t => t.done).length;
-      const progress = total ? Math.round((done / total) * 100) : 0;
-      kpiTasks.textContent = total;
-      kpiDone.textContent = done;
-      kpiProgress.textContent = progress + '%';
-      progressLabel.textContent = progress + '%';
-      progressBar.style.width = progress + '%';
+    function addTask(text) {
+      const tasks = loadTasks();
+      if (!text || text.trim() === '') return;
+      tasks.push({ text: text.trim(), done: false, createdAt: Date.now() });
+      saveTasks(tasks);
+      renderTasks();
     }
 
+    function toggleDone(index) {
+      const tasks = loadTasks();
+      if (!tasks[index]) return;
+      tasks[index].done = !tasks[index].done;
+      // Auto check-in on first completion of the day (optional)
+      if (tasks[index].done) doCheckIn();
+      saveTasks(tasks);
+      renderTasks();
+    }
+
+    function removeTask(index) {
+      const tasks = loadTasks();
+      tasks.splice(index, 1);
+      saveTasks(tasks);
+      renderTasks();
+    }
+function removeTask(index) {
+  const tasks = loadTasks();
+  const task = tasks[index];
+  
+  // Wenn die Task erledigt war → in History speichern
+  if (task && task.done) archiveTask(task);
+  
+  // Danach aus der aktuellen Liste löschen
+  tasks.splice(index, 1);
+  saveTasks(tasks);
+  renderTasks();
+}
+
+   function updateKPIs(tasks) {
+  const history = loadCompletedHistory();
+  const total = tasks.length;
+  const done = tasks.filter(t => t.done).length + history.length; // erledigte + archivierte
+  const progress = total ? Math.round((done / (total + history.length)) * 100) : 100;
+
+  kpiTasks.textContent = total + history.length;
+  kpiDone.textContent = done;
+  kpiProgress.textContent = progress + '%';
+  progressLabel.textContent = progress + '%';
+  progressBar.style.width = progress + '%';
+}
+    // ========== HISTORIC TRACKING SYSTEM ==========
+// Lädt archivierte erledigte Tasks
+function loadCompletedHistory() {
+  try { return JSON.parse(localStorage.getItem(ns('completedHistory')) || '[]'); }
+  catch { return []; }
+}
+// Speichert archivierte erledigte Tasks
+function saveCompletedHistory(history) {
+  localStorage.setItem(ns('completedHistory'), JSON.stringify(history));
+}
+// Fügt erledigten Task zur History hinzu
+function archiveTask(task) {
+  const history = loadCompletedHistory();
+  // Doppelte Einträge vermeiden (z. B. wenn man eine alte Task neu hinzufügt)
+  if (!history.find(h => h.text === task.text && h.doneAt === task.doneAt)) {
+    task.doneAt = task.doneAt || Date.now();
+    history.push(task);
+    saveCompletedHistory(history);
+  }
+}
     function escapeHtml(s) {
-      return String(s).replace(/[&<>\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c] || c));
+      return s.replace(/[&<>"]+/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
     }
 
-    // --- Streak ---
-    let streakCache = { count: 0, last: '' };
-    async function loadStreak() {
-      try {
-        const res = await fetch(API_BASE + '/streak', { credentials: 'include' });
-        if (!res.ok) throw new Error('no-streak');
-        streakCache = await res.json();
-        reflectStreak(streakCache);
-      } catch (e) {
-        console.warn('Streak backend missing, starting fresh');
-        reflectStreak(streakCache);
-      }
-    }
+    // ---------- Streak / Check-in ----------
+   // === YGJ – Streak System mit Modal ===
 
-    async function doCheckIn() {
-      try {
-        const res = await fetch(API_BASE + '/streak', {
-          method: 'POST',
-          credentials: 'include'
-        });
-        if (!res.ok) throw new Error('checkin-fail');
-        streakCache = await res.json();
-        reflectStreak(streakCache);
-        showCheckInModal(streakCache.count);
-      } catch (e) {
-        console.error(e);
-        alert('Check-in fehlgeschlagen.');
-      }
-    }
+// Holt Streak aus localStorage
+function getStreak() {
+  try {
+    return JSON.parse(localStorage.getItem(ns('streak')) || '{"count":0,"last":""}');
+  } catch {
+    return { count: 0, last: '' };
+  }
+}
 
-    function reflectStreak(s) {
-      kpiStreak.textContent = s.count || 0;
-      const today = new Date().toISOString().slice(0,10);
-      if (s.last === today) {
-        checkinStatus.innerHTML = '<i class="fa-solid fa-circle-check"></i> Checked in today';
+// Speichert Streak
+function saveStreak(obj) {
+  localStorage.setItem(ns('streak'), JSON.stringify(obj));
+}
+
+// Formatiert Datum (YYYY-MM-DD)
+function formatDate(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+// Check-In durchführen
+function doCheckIn() {
+  const today = formatDate(new Date());
+  const s = getStreak();
+  if (s.last === today) return; // bereits heute eingecheckt
+
+  const yesterday = formatDate(new Date(Date.now() - 86400000));
+  const nextCount = (s.last === yesterday) ? s.count + 1 : 1;
+  const updated = { count: nextCount, last: today };
+
+  saveStreak(updated);
+  reflectStreak(updated);
+
+  // Modal anzeigen nach erfolgreichem Check-In
+  showCheckInModal(updated.count);
+}
+
+// Aktualisiert die Anzeige des Streaks
+function reflectStreak(s) {
+  kpiStreak.textContent = s.count;
+  if (s.last === formatDate(new Date())) {
+    checkinStatus.innerHTML = '<i class="fa-solid fa-circle-check"></i> Checked in today';
+  } else {
+    checkinStatus.innerHTML = '<i class="fa-solid fa-calendar-day"></i> Not checked in';
+  }
+}
+
+// === YGJ Modal Design ===
+function showCheckInModal(count) {
+  // Falls schon ein Modal offen ist → nicht doppelt öffnen
+  if (document.querySelector('.modal-overlay')) return;
+
+  const modal = document.createElement('div');
+  modal.classList.add('modal-overlay');
+
+  modal.innerHTML = `
+    <div class="modal-content">
+      <p><i class="fa-solid fa-fire"></i> Great job! You’ve checked in for <b>${count}</b> day${count > 1 ? 's' : ''} in a row 🔥</p>
+      <button class="close-modal-btn btn">OK</button>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // Schließen bei Klick
+  modal.querySelector('.close-modal-btn').addEventListener('click', () => {
+    modal.remove();
+  });
+}
+
+// === Initialisierung ===
+document.addEventListener('DOMContentLoaded', () => {
+  const s = getStreak();
+  reflectStreak(s);
+
+  const checkInBtn = document.getElementById('check-in');
+  if (checkInBtn) checkInBtn.addEventListener('click', doCheckIn);
+});
+
+    // ---------- Export PDF ----------
+    function exportPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const margin = 12;
+      let y = margin;
+
+      const title = 'YGJ – Free Plan Progress';
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
+      doc.text(title, margin, y);
+      y += 8;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      const user = getCurrentUser();
+      const dateStr = new Date().toLocaleString();
+      doc.text(`User: ${user}`, margin, y); y += 6;
+      doc.text(`Exported: ${dateStr}`, margin, y); y += 10;
+
+      // KPIs
+      const tasks = loadTasks();
+      const total = tasks.length;
+      const done = tasks.filter(t => t.done).length;
+      const progress = total ? Math.round((done/total)*100) : 0;
+      const streak = getStreak().count;
+
+      doc.setFont('helvetica','bold');
+      doc.text('Overview', margin, y); y += 7;
+      doc.setFont('helvetica','normal');
+      doc.text(`Tasks: ${total}`, margin, y); y += 6;
+      doc.text(`Done: ${done}`, margin, y); y += 6;
+      doc.text(`Progress: ${progress}%`, margin, y); y += 6;
+      doc.text(`Day Streak: ${streak}`, margin, y); y += 10;
+
+      // Task List
+      doc.setFont('helvetica','bold');
+      doc.text('Your Tasks', margin, y); y += 7;
+      doc.setFont('helvetica','normal');
+      if (tasks.length === 0) {
+        doc.text('No tasks yet. Add some and crush them!', margin, y); y += 6;
       } else {
-        checkinStatus.innerHTML = '<i class="fa-solid fa-calendar-day"></i> Not checked in';
+        tasks.forEach((t, i) => {
+          const line = `${i+1}. ${t.text} — ${t.done ? 'Done' : 'Pending'}`;
+          // Wrap text if necessary
+          const lines = doc.splitTextToSize(line, 180);
+          lines.forEach(ln => { doc.text(ln, margin, y); y += 6; });
+          if (y > 280) { doc.addPage(); y = margin; }
+        });
       }
+
+      // Footer note
+      if (y > 260) { doc.addPage(); y = margin; }
+      y += 6;
+      doc.setFontSize(10);
+      doc.text('Keep showing up. Small steps, daily.', margin, y);
+
+      doc.save('ygj_free_plan_progress.pdf');
     }
 
-    function showCheckInModal(count) {
-      if (document.querySelector('.modal-overlay')) return;
-      const modal = document.createElement('div');
-      modal.classList.add('modal-overlay');
-      modal.innerHTML = `
-        <div class="modal-content">
-          <p><i class="fa-solid fa-fire"></i> Great job! You’ve checked in for <b>${count}</b> day${count>1?'s':''} in a row 🔥</p>
-          <button class="close-modal-btn btn">OK</button>
-        </div>`;
-      document.body.appendChild(modal);
-      modal.querySelector('.close-modal-btn').addEventListener('click', () => modal.remove());
-    }
-
-    // --- PDF Export (backend) ---
-    async function exportPDF() {
-      try {
-        const res = await fetch(API_BASE + '/export', { credentials: 'include' });
-        if (!res.ok) throw new Error('export-fail');
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'ygj_free_plan_progress.pdf';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(url);
-      } catch (e) {
-        console.error(e);
-        alert('Could not export');
-      }
-    }
-
-    // --- Guide download fallback ---
+    // ---------- Guide Download (static PDF you will add later) ----------
     async function downloadGuide() {
+      // Expected path for your own authored PDF; change if you prefer
       const url = 'assets/ygj_free_plan.pdf';
       try {
         const res = await fetch(url, { method: 'HEAD' });
         if (!res.ok) throw new Error('missing');
-        window.location.href = url;
+        window.location.href = url; // start download
       } catch (e) {
-        alert('Error');
+        // Soft fallback if the file isn’t uploaded yet
+        alert('The YGJ Free Plan PDF will be available soon. Add your file at \n"assets/ygj_free_plan.pdf" to enable this button.');
       }
     }
 
-    // --- UI wiring ---
+    // ---------- Wire up UI ----------
     function bindUI() {
-      $('#new-quote').addEventListener('click', fetchQuote);
-      $('#check-in').addEventListener('click', () => { doCheckIn(); });
+      $('#new-quote').addEventListener('click', randomQuote);
+      $('#check-in').addEventListener('click', () => { doCheckIn(); alert('Nice! You checked in for today. Keep the streak alive.'); });
 
       $('#add-task').addEventListener('click', () => {
         const val = $('#task-input').value.trim();
@@ -487,32 +548,28 @@
         if (e.key === 'Enter') { e.preventDefault(); $('#add-task').click(); }
       });
 
+      $$('.template').forEach(btn => btn.addEventListener('click', () => addTask(btn.dataset.text)));
+
       $('#export-pdf').addEventListener('click', exportPDF);
       $('#download-guide').addEventListener('click', downloadGuide);
-
-      // Basic navigation wiring
-      $('#profile-btn').addEventListener('click', () => window.location.href = '/profile.html');
-      $('#about-btn').addEventListener('click', () => window.location.href = '/about-us.html');
-      $('#contact-btn').addEventListener('click', () => window.location.href = '/contact.html');
-      $('#logout-btn').addEventListener('click', async () => {
-        try {
-          await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-        } catch (e) { /* ignore */ }
-        window.location.href = '/login.html';
-      });
     }
 
-    // --- Init ---
-    (async function init(){
-      try {
-        await ensureAuth();
-        await fetchQuote();
-        await loadTasks();
-        await loadStreak();
-        bindUI();
-      } catch (e) { console.warn('Init aborted', e); }
-    })();
+    // ---------- Init ----------
+    function init() {
+      // Quote
+      randomQuote();
+      // Tasks & KPIs
+      renderTasks();
+      // Streak
+      reflectStreak(getStreak());
+      // UI
+      bindUI();
+    }
 
+    // Run when DOM is ready (this script is at the end, so DOM is ready). Still safe-guarding.
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else { init(); }
   })();
   </script>
 </body>
