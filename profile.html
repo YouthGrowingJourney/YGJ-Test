@@ -107,31 +107,25 @@
     &copy; Youth Growing Journey – built for a strong generation.
   </footer>
 
-  <script src="script.js"></script>
-<script src="script.js"></script>
-<script>
+  <script>
   (function() {
-    const API_BASE = 'http://localhost:5000/api'; // Replace for production
+    const API_BASE = 'http://localhost:5000/api';
     const TOKEN_KEY = 'ygj_token';
     const USER_KEY = 'ygj_user';
 
     async function fetchProfile(token) {
       try {
         const res = await fetch(`${API_BASE}/auth/me`, {
-          headers: {
-            'Authorization': 'Bearer ' + token
-          }
+          headers: { 'Authorization': 'Bearer ' + token }
         });
 
         if (!res.ok) return null;
-        const data = await res.json();
-        return data;
-
+        return await res.json();
       } catch (err) {
         console.error('Profile fetch failed', err);
         return null;
       }
-    } // <-- fetchProfile korrekt geschlossen
+    }
 
     function redirectToLogin() {
       window.location.href = 'login.html';
@@ -143,23 +137,20 @@
       redirectToLogin();
     }
 
-    document.addEventListener('DOMContentLoaded', async () => {
+    async function initProfile() {
       const token = localStorage.getItem(TOKEN_KEY);
       const loading = document.getElementById('loading');
       const profileSection = document.getElementById('profile-section');
       const nameEl = document.getElementById('profile-name');
       const emailEl = document.getElementById('profile-email');
       const idEl = document.getElementById('profile-id');
-      const msgEl = document.getElementById('profile-message');
       const logoutBtn = document.getElementById('logout-btn');
 
-      // Kein Token → redirect
       if (!token) {
         redirectToLogin();
         return;
       }
 
-      // Token vorhanden → Daten laden
       const userData = await fetchProfile(token);
 
       if (!userData || !userData.email) {
@@ -168,18 +159,21 @@
         return;
       }
 
-      // Daten anzeigen
+      // Show profile
       loading.style.display = 'none';
       profileSection.style.display = 'block';
       nameEl.textContent = userData.displayName || 'User';
       emailEl.textContent = userData.email;
-      idEl.textContent = userData.id || userData._id || '-';
+      idEl.textContent = userData.id || '-';
 
-      logoutBtn.addEventListener('click', () => {
-        logout();
-      });
-    });
+      // Save user in localStorage for future reference (optional)
+      localStorage.setItem(USER_KEY, JSON.stringify(userData));
+
+      logoutBtn.addEventListener('click', logout);
+    }
+
+    document.addEventListener('DOMContentLoaded', initProfile);
   })();
-</script>
+  </script>
 </body>
 </html>
