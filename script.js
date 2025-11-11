@@ -82,35 +82,66 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ============================
      LOGIN HANDLER
   ============================ */
-  const loginSubmit = document.getElementById("login-submit");
-  if (loginSubmit) {
-    loginSubmit.addEventListener("click", async (e) => {
-      e.preventDefault();
-      const email = document.getElementById("login-username").value.trim();
-      const password = document.getElementById("login-password").value.trim();
-      const msg = document.getElementById("login-message");
+  /* ============================
+   LOGIN (page-specific)
+============================ */
+const loginSubmit = document.getElementById("login-submit");
+if (loginSubmit) {
+  loginSubmit.addEventListener("click", async (e) => {
+    e.preventDefault(); // verhindert Default-Form-Submit
+    const emailEl = document.getElementById("login-username"); // E-Mail
+    const passwordEl = document.getElementById("login-password");
+    const msg = document.getElementById("login-message");
 
-      try {
-        const res = await fetch("http://localhost:5000/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password })
-        });
+    if (!emailEl || !passwordEl || !msg) return;
 
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Login failed");
+    const email = emailEl.value.trim();
+    const password = passwordEl.value.trim();
 
-        localStorage.setItem("ygj_token", data.token);
-        msg.textContent = "Login successful!";
-        msg.style.color = "#0f0";
+    if (!email || !password) {
+      msg.textContent = "Please fill out all fields!";
+      msg.style.color = "#f00";
+      return;
+    }
 
-        setTimeout(() => window.location.href = "profile.html", 600);
-      } catch (err) {
-        msg.textContent = err.message;
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        msg.textContent = data.message || "Login failed";
         msg.style.color = "#f00";
+        return;
       }
-    });
-  }
+
+      // ✅ Token & User speichern
+      localStorage.setItem("ygj_token", data.token);
+      localStorage.setItem("currentUser", data.user.displayName);
+
+      msg.textContent = "Log-In Successful!";
+      msg.style.color = "#0f0";
+
+      // Theme des Users direkt anwenden
+      const userTheme = localStorage.getItem(`ygj_theme_${data.user.displayName}`) || "light";
+      document.body.classList.toggle("dark", userTheme === "dark");
+
+      updateNav(); // Navbar Buttons aktualisieren
+
+      setTimeout(() => window.location.href = "profile.html", 500);
+
+    } catch (err) {
+      console.error("Login failed", err);
+      msg.textContent = "Server error, try again later";
+      msg.style.color = "#f00";
+    }
+  });
+}
+
 
   /* ============================
      REGISTER HANDLER
