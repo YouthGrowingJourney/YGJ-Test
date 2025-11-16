@@ -198,31 +198,38 @@ body.dark .modal-content {
 
   <!-- Page-specific logic kept isolated to avoid conflicts -->
   <script>
-     document.addEventListener("DOMContentLoaded", () => {
-    const currentUser = localStorage.getItem("currentUser");
-    if (!currentUser || currentUser === "null") {
-      alert("⚠️You have to log-in to use the Free-Plan!");
-      window.location.href = "login.html";
-    }
-  });
-  (function() {
-    // ---------- Helpers & Storage Namespacing ----------
-    const getCurrentUser = () => localStorage.getItem('currentUser') || 'guest';
-    const ns = (key) => `ygj_free_${getCurrentUser()}_${key}`; // per-user if logged in, else guest
+    // public/js/freeplan.client.js
+(function() {
+  const API_BASE = 'http://localhost:5000/api';
+  const TOKEN_KEY = 'ygj_token';
+  const USER_KEY = 'ygj_user';
 
-    const $ = (sel) => document.querySelector(sel);
-    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+  // Helper: get bearer token if present
+  function getAuthHeader() {
+    const token = sessionStorage.getItem(TOKEN_KEY);
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
 
-    const quoteEl = $('#daily-quote');
-    const kpiTasks = $('#kpi-tasks');
-    const kpiDone = $('#kpi-done');
-    const kpiStreak = $('#kpi-streak');
-    const kpiProgress = $('#kpi-progress');
-    const progressLabel = $('#progress');
-    const progressBar = $('#progress-bar');
-    const checkinStatus = $('#checkin-status');
+  // Local namespacing for offline fallback (preserve earlier behaviour)
+  const getCurrentUser = () => sessionStorage.getItem(USER_KEY) ? JSON.parse(sessionStorage.getItem(USER_KEY)).displayName || 'guest' : (localStorage.getItem('currentUser') || 'guest');
+  const nsLocal = (key) => `ygj_free_${getCurrentUser()}_${key}`;
 
-    const quotes = [
+  // DOM refs (reuse IDs from your Free-Plan HTML)
+  const quoteEl = document.getElementById('daily-quote');
+  const kpiTasks = document.getElementById('kpi-tasks');
+  const kpiDone = document.getElementById('kpi-done');
+  const kpiStreak = document.getElementById('kpi-streak');
+  const kpiProgress = document.getElementById('kpi-progress');
+  const progressBar = document.getElementById('progress-bar');
+  const progressLabel = document.getElementById('progress');
+
+  const taskInput = document.getElementById('task-input');
+  const addBtn = document.getElementById('add-task');
+  const taskList = document.getElementById('task-list');
+  const checkinStatus = document.getElementById('checkin-status');
+
+  // Quote pool (same as before)
+  const quotes = 
     "Imagination is more important than knowledge. For knowledge is limited. ~Albert Einstein",
     "When something is important enough, you do it even if the odds are not in your favor. ~Elon Musk",
     "The people who are crazy enough to think they can change the world are the ones who do. ~ Steve Jobs",
@@ -256,321 +263,274 @@ body.dark .modal-content {
     "If you don’t give up, you still have a chance. Giving up is the greatest failure. ~Jack Ma",
     "Do the hard work, especially when you don't feel like it. ~Hamza Ahmed"
     ];
+  function randomQuote() {
+    if (!quoteEl) return;
+    const q = quotes[Math.floor(Math.random() * quotes.length)];
+    quoteEl.textContent = q;
+  }
 
-    function randomQuote() {
-      const q = quotes[Math.floor(Math.random() * quotes.length)];
-      quoteEl.textContent = q;
-    }
-
-    // ---------- Tasks State ----------
-    function loadTasks() {
-      try { return JSON.parse(localStorage.getItem(ns('tasks')) || '[]'); }
-      catch { return []; }
-    }
-    function saveTasks(tasks) {
-      localStorage.setItem(ns('tasks'), JSON.stringify(tasks));
-      updateKPIs(tasks);
-    }
-
-    function renderTasks() {
-      const list = $('#task-list');
-      const tasks = loadTasks();
-      list.innerHTML = '';
-      tasks.forEach((t, i) => {
-        const li = document.createElement('li');
-        li.dataset.index = i;
-        if (t.done) li.classList.add('done');
-        li.innerHTML = `
-          <input type="checkbox" ${t.done ? 'checked' : ''} aria-label="Toggle done" />
-          <span class="task-text">${escapeHtml(t.text)}</span>
-          <div>
-            <button class="icon-btn move-up" title="Move up"><i class="fa-solid fa-chevron-up"></i></button>
-            <button class="icon-btn move-down" title="Move down"><i class="fa-solid fa-chevron-down"></i></button>
-          </div>
-          <button class="icon-btn remove" title="Delete"><i class="fa-solid fa-trash"></i></button>
-        `;
-        list.appendChild(li);
+  // ---------- Storage: prefer remote API ----------
+  async function fetchFreePlan() {
+    // try API first
+    try {
+      const res = await fetch(`${API_BASE}/freeplan`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+        credentials: 'include'
       });
-      attachTaskHandlers();
-      updateKPIs(tasks);
-    }
-
-    function attachTaskHandlers() {
-      $$('#task-list li').forEach(li => {
-        const idx = +li.dataset.index;
-        li.querySelector('input[type="checkbox"]').addEventListener('change', () => toggleDone(idx));
-        li.querySelector('.remove').addEventListener('click', () => removeTask(idx));
-        li.querySelector('.move-up').addEventListener('click', () => moveTask(idx, -1));
-        li.querySelector('.move-down').addEventListener('click', () => moveTask(idx, +1));
-      });
-    }
-
-    function addTask(text) {
-      const tasks = loadTasks();
-      if (!text || text.trim() === '') return;
-      tasks.push({ text: text.trim(), done: false, createdAt: Date.now() });
-      saveTasks(tasks);
-      renderTasks();
-    }
-
-    function toggleDone(index) {
-      const tasks = loadTasks();
-      if (!tasks[index]) return;
-      tasks[index].done = !tasks[index].done;
-      // Auto check-in on first completion of the day (optional)
-      if (tasks[index].done) doCheckIn();
-      saveTasks(tasks);
-      renderTasks();
-    }
-
-    function removeTask(index) {
-      const tasks = loadTasks();
-      tasks.splice(index, 1);
-      saveTasks(tasks);
-      renderTasks();
-    }
-function removeTask(index) {
-  const tasks = loadTasks();
-  const task = tasks[index];
-  
-  // Wenn die Task erledigt war → in History speichern
-  if (task && task.done) archiveTask(task);
-  
-  // Danach aus der aktuellen Liste löschen
-  tasks.splice(index, 1);
-  saveTasks(tasks);
-  renderTasks();
-}
-
-   function updateKPIs(tasks) {
-  const history = loadCompletedHistory();
-  const total = tasks.length;
-  const done = tasks.filter(t => t.done).length + history.length; // erledigte + archivierte
-  const progress = total ? Math.round((done / (total + history.length)) * 100) : 100;
-
-  kpiTasks.textContent = total + history.length;
-  kpiDone.textContent = done;
-  kpiProgress.textContent = progress + '%';
-  progressLabel.textContent = progress + '%';
-  progressBar.style.width = progress + '%';
-}
-    // ========== HISTORIC TRACKING SYSTEM ==========
-// Lädt archivierte erledigte Tasks
-function loadCompletedHistory() {
-  try { return JSON.parse(localStorage.getItem(ns('completedHistory')) || '[]'); }
-  catch { return []; }
-}
-// Speichert archivierte erledigte Tasks
-function saveCompletedHistory(history) {
-  localStorage.setItem(ns('completedHistory'), JSON.stringify(history));
-}
-// Fügt erledigten Task zur History hinzu
-function archiveTask(task) {
-  const history = loadCompletedHistory();
-  // Doppelte Einträge vermeiden (z. B. wenn man eine alte Task neu hinzufügt)
-  if (!history.find(h => h.text === task.text && h.doneAt === task.doneAt)) {
-    task.doneAt = task.doneAt || Date.now();
-    history.push(task);
-    saveCompletedHistory(history);
-  }
-}
-    function escapeHtml(s) {
-      return s.replace(/[&<>"]+/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-    }
-
-    // ---------- Streak / Check-in ----------
-   // === YGJ – Streak System mit Modal ===
-
-// Holt Streak aus localStorage
-function getStreak() {
-  try {
-    return JSON.parse(localStorage.getItem(ns('streak')) || '{"count":0,"last":""}');
-  } catch {
-    return { count: 0, last: '' };
-  }
-}
-
-// Speichert Streak
-function saveStreak(obj) {
-  localStorage.setItem(ns('streak'), JSON.stringify(obj));
-}
-
-// Formatiert Datum (YYYY-MM-DD)
-function formatDate(d) {
-  return d.toISOString().slice(0, 10);
-}
-
-// Check-In durchführen
-function doCheckIn() {
-  const today = formatDate(new Date());
-  const s = getStreak();
-  if (s.last === today) return; // bereits heute eingecheckt
-
-  const yesterday = formatDate(new Date(Date.now() - 86400000));
-  const nextCount = (s.last === yesterday) ? s.count + 1 : 1;
-  const updated = { count: nextCount, last: today };
-
-  saveStreak(updated);
-  reflectStreak(updated);
-
-  // Modal anzeigen nach erfolgreichem Check-In
-  showCheckInModal(updated.count);
-}
-
-// Aktualisiert die Anzeige des Streaks
-function reflectStreak(s) {
-  kpiStreak.textContent = s.count;
-  if (s.last === formatDate(new Date())) {
-    checkinStatus.innerHTML = '<i class="fa-solid fa-circle-check"></i> Checked in today';
-  } else {
-    checkinStatus.innerHTML = '<i class="fa-solid fa-calendar-day"></i> Not checked in';
-  }
-}
-
-// === YGJ Modal Design ===
-function showCheckInModal(count) {
-  // Falls schon ein Modal offen ist → nicht doppelt öffnen
-  if (document.querySelector('.modal-overlay')) return;
-
-  const modal = document.createElement('div');
-  modal.classList.add('modal-overlay');
-
-  modal.innerHTML = `
-    <div class="modal-content">
-      <p><i class="fa-solid fa-fire"></i> Great job! You’ve checked in for <b>${count}</b> day${count > 1 ? 's' : ''} in a row 🔥</p>
-      <button class="close-modal-btn btn">OK</button>
-    </div>
-  `;
-
-  document.body.appendChild(modal);
-
-  // Schließen bei Klick
-  modal.querySelector('.close-modal-btn').addEventListener('click', () => {
-    modal.remove();
-  });
-}
-
-// === Initialisierung ===
-document.addEventListener('DOMContentLoaded', () => {
-  const s = getStreak();
-  reflectStreak(s);
-
-  const checkInBtn = document.getElementById('check-in');
-  if (checkInBtn) checkInBtn.addEventListener('click', doCheckIn);
-});
-
-    // ---------- Export PDF ----------
-    function exportPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      const margin = 12;
-      let y = margin;
-
-      const title = 'YGJ – Free Plan Progress';
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(18);
-      doc.text(title, margin, y);
-      y += 8;
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(11);
-      const user = getCurrentUser();
-      const dateStr = new Date().toLocaleString();
-      doc.text(`User: ${user}`, margin, y); y += 6;
-      doc.text(`Exported: ${dateStr}`, margin, y); y += 10;
-
-      // KPIs
-      const tasks = loadTasks();
-      const total = tasks.length;
-      const done = tasks.filter(t => t.done).length;
-      const progress = total ? Math.round((done/total)*100) : 0;
-      const streak = getStreak().count;
-
-      doc.setFont('helvetica','bold');
-      doc.text('Overview', margin, y); y += 7;
-      doc.setFont('helvetica','normal');
-      doc.text(`Tasks: ${total}`, margin, y); y += 6;
-      doc.text(`Done: ${done}`, margin, y); y += 6;
-      doc.text(`Progress: ${progress}%`, margin, y); y += 6;
-      doc.text(`Day Streak: ${streak}`, margin, y); y += 10;
-
-      // Task List
-      doc.setFont('helvetica','bold');
-      doc.text('Your Tasks', margin, y); y += 7;
-      doc.setFont('helvetica','normal');
-      if (tasks.length === 0) {
-        doc.text('No tasks yet. Add some and crush them!', margin, y); y += 6;
-      } else {
-        tasks.forEach((t, i) => {
-          const line = `${i+1}. ${t.text} — ${t.done ? 'Done' : 'Pending'}`;
-          // Wrap text if necessary
-          const lines = doc.splitTextToSize(line, 180);
-          lines.forEach(ln => { doc.text(ln, margin, y); y += 6; });
-          if (y > 280) { doc.addPage(); y = margin; }
-        });
+      if (res.ok) {
+        return await res.json();
       }
-
-      // Footer note
-      if (y > 260) { doc.addPage(); y = margin; }
-      y += 6;
-      doc.setFontSize(10);
-      doc.text('Keep showing up. Small steps, daily.', margin, y);
-
-      doc.save('ygj_free_plan_progress.pdf');
+      // if 401/403, fall back to LocalStorage
+    } catch (err) {
+      console.warn('API fetch failed, falling back to localStorage', err);
     }
+    // fallback
+    return {
+      tasks: JSON.parse(localStorage.getItem(nsLocal('tasks')) || '[]'),
+      taskHistory: JSON.parse(localStorage.getItem(nsLocal('completedHistory')) || '[]'),
+      streak: JSON.parse(localStorage.getItem(nsLocal('streak')) || '{"count":0,"last":""}')
+    };
+  }
 
-    // ---------- Guide Download (static PDF you will add later) ----------
-    async function downloadGuide() {
-      // Expected path for your own authored PDF; change if you prefer
-      const url = 'assets/ygj_free_plan.pdf';
-      try {
-        const res = await fetch(url, { method: 'HEAD' });
-        if (!res.ok) throw new Error('missing');
-        window.location.href = url; // start download
-      } catch (e) {
-        // Soft fallback if the file isn’t uploaded yet
-        alert('The YGJ Free Plan PDF will be available soon. Add your file at \n"assets/ygj_free_plan.pdf" to enable this button.');
-      }
-    }
-
-    // ---------- Wire up UI ----------
-    function bindUI() {
-      $('#new-quote').addEventListener('click', randomQuote);
-      $('#check-in').addEventListener('click', () => { doCheckIn(); alert('Nice! You checked in for today. Keep the streak alive.'); });
-
-      $('#add-task').addEventListener('click', () => {
-        const val = $('#task-input').value.trim();
-        addTask(val);
-        $('#task-input').value = '';
-        $('#task-input').focus();
+  async function saveFreePlanRemote(payload) {
+    try {
+      const res = await fetch(`${API_BASE}/freeplan/save`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+        credentials: 'include',
+        body: JSON.stringify(payload)
       });
-      $('#task-input').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); $('#add-task').click(); }
+      if (!res.ok) throw new Error('Remote save failed');
+      return await res.json();
+    } catch (err) {
+      console.warn('Remote save failed, persisting locally', err);
+      // persist locally as fallback
+      if (Array.isArray(payload.tasks)) localStorage.setItem(nsLocal('tasks'), JSON.stringify(payload.tasks));
+      if (Array.isArray(payload.taskHistory)) localStorage.setItem(nsLocal('completedHistory'), JSON.stringify(payload.taskHistory));
+      if (payload.streak) localStorage.setItem(nsLocal('streak'), JSON.stringify(payload.streak));
+      return null;
+    }
+  }
+
+  // ---------- UI helpers ----------
+  function escapeHtml(s) {
+    return (s || '').replace(/[&<>"]+/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  }
+
+  function renderTasks(tasks, history) {
+    taskList.innerHTML = '';
+    tasks.forEach((t, i) => {
+      const li = document.createElement('li');
+      li.dataset.index = i;
+      if (t.done) li.classList.add('done');
+      li.innerHTML = `
+        <input type="checkbox" ${t.done ? 'checked' : ''} aria-label="Toggle done" />
+        <span class="task-text">${escapeHtml(t.text)}</span>
+        <div>
+          <button class="icon-btn move-up" title="Move up"><i class="fa-solid fa-chevron-up"></i></button>
+          <button class="icon-btn move-down" title="Move down"><i class="fa-solid fa-chevron-down"></i></button>
+        </div>
+        <button class="icon-btn remove" title="Delete"><i class="fa-solid fa-trash"></i></button>
+      `;
+      taskList.appendChild(li);
+    });
+
+    attachTaskHandlers();
+  }
+
+  function attachTaskHandlers() {
+    Array.from(taskList.querySelectorAll('li')).forEach(li => {
+      const idx = +li.dataset.index;
+      const checkbox = li.querySelector('input[type="checkbox"]');
+      const removeBtn = li.querySelector('.remove');
+      const upBtn = li.querySelector('.move-up');
+      const downBtn = li.querySelector('.move-down');
+
+      checkbox && checkbox.addEventListener('change', async () => {
+        const fp = await loadAndSync();
+        const tasks = fp.tasks;
+        tasks[idx].done = !!checkbox.checked;
+        if (tasks[idx].done) tasks[idx].doneAt = Date.now();
+        // If done -> move to history immediately (like earlier logic)
+        if (tasks[idx].done) {
+          const doneTask = tasks[idx];
+          // push to history if not already
+          const history = fp.taskHistory || [];
+          history.push(doneTask);
+          // remove from tasks
+          tasks.splice(idx, 1);
+          // save
+          await saveFreePlanRemote({ tasks, taskHistory: history, streak: fp.streak });
+          renderTasks(tasks, history);
+          updateKPIs(tasks, history);
+          doCheckInLocal(fp.streak); // ensure streak updated client side
+        } else {
+          await saveFreePlanRemote({ tasks, taskHistory: fp.taskHistory, streak: fp.streak });
+          renderTasks(tasks, fp.taskHistory);
+          updateKPIs(tasks, fp.taskHistory);
+        }
       });
 
-      $$('.template').forEach(btn => btn.addEventListener('click', () => addTask(btn.dataset.text)));
+      removeBtn && removeBtn.addEventListener('click', async () => {
+        const fp = await loadAndSync();
+        const tasks = fp.tasks;
+        const history = fp.taskHistory || [];
+        // If removing a done task from list -> move to history (matching your earlier behavior)
+        const removed = tasks.splice(idx, 1)[0];
+        if (removed && removed.done) {
+          history.push(removed);
+        }
+        await saveFreePlanRemote({ tasks, taskHistory: history, streak: fp.streak });
+        renderTasks(tasks, history);
+        updateKPIs(tasks, history);
+      });
 
-      $('#export-pdf').addEventListener('click', exportPDF);
-      $('#download-guide').addEventListener('click', downloadGuide);
+      upBtn && upBtn.addEventListener('click', async () => {
+        const fp = await loadAndSync();
+        const tasks = fp.tasks;
+        if (idx <= 0) return;
+        [tasks[idx-1], tasks[idx]] = [tasks[idx], tasks[idx-1]];
+        await saveFreePlanRemote({ tasks, taskHistory: fp.taskHistory, streak: fp.streak });
+        renderTasks(tasks, fp.taskHistory);
+      });
+
+      downBtn && downBtn.addEventListener('click', async () => {
+        const fp = await loadAndSync();
+        const tasks = fp.tasks;
+        if (idx >= tasks.length - 1) return;
+        [tasks[idx+1], tasks[idx]] = [tasks[idx], tasks[idx+1]];
+        await saveFreePlanRemote({ tasks, taskHistory: fp.taskHistory, streak: fp.streak });
+        renderTasks(tasks, fp.taskHistory);
+      });
+    });
+  }
+
+  function updateKPIs(tasks, history) {
+    const hist = history || [];
+    const t = tasks || [];
+    const total = t.length + hist.length;
+    const done = hist.length + t.filter(x => x.done).length;
+    const progress = total ? Math.round((done / total) * 100) : 0;
+    kpiTasks.textContent = total;
+    kpiDone.textContent = done;
+    kpiProgress.textContent = progress + '%';
+    progressLabel.textContent = progress + '%';
+    progressBar.style.width = progress + '%';
+  }
+
+  // ---------- Streak logic (client-side update + persisted via save) ----------
+  function formatDateISO(d) { return new Date(d).toISOString().slice(0,10); }
+
+  async function doCheckInLocal(streakObj) {
+    const today = formatDateISO(new Date());
+    let s = streakObj || JSON.parse(localStorage.getItem(nsLocal('streak')) || '{"current":0,"last":""}');
+    const yesterday = formatDateISO(new Date(Date.now() - 86400000));
+    if (s.last === today) return s;
+    const nextCount = (s.last === yesterday) ? (s.current || 0) + 1 : 1;
+    s = { current: nextCount, longest: Math.max(s.longest || 0, nextCount), last: today };
+    // persist remote
+    const fp = await loadAndSync();
+    await saveFreePlanRemote({ tasks: fp.tasks, taskHistory: fp.taskHistory, streak: s });
+    reflectStreak(s);
+    showCheckInModal(s.current);
+    return s;
+  }
+
+  function reflectStreak(s) {
+    if (!kpiStreak) return;
+    kpiStreak.textContent = s.current || 0;
+    if ((s.last || '') === formatDateISO(new Date())) {
+      checkinStatus.innerHTML = '<i class="fa-solid fa-circle-check"></i> Checked in today';
+    } else {
+      checkinStatus.innerHTML = '<i class="fa-solid fa-calendar-day"></i> Not checked in';
     }
+  }
 
-    // ---------- Init ----------
-    function init() {
-      // Quote
-      randomQuote();
-      // Tasks & KPIs
-      renderTasks();
-      // Streak
-      reflectStreak(getStreak());
-      // UI
-      bindUI();
-    }
+  function showCheckInModal(count) {
+    if (document.querySelector('.modal-overlay')) return;
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+      <div class="modal-content">
+        <p><i class="fa-solid fa-fire"></i> Great job! You’ve checked in for <b>${count}</b> day${count > 1 ? 's' : ''} in a row 🔥</p>
+        <button class="close-modal-btn btn">OK</button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.querySelector('.close-modal-btn').addEventListener('click', () => modal.remove());
+  }
 
-    // Run when DOM is ready (this script is at the end, so DOM is ready). Still safe-guarding.
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init);
-    } else { init(); }
-  })();
+  // ---------- Load & Sync ----------
+  async function loadAndSync() {
+    const remote = await fetchFreePlan();
+    // normalize shape
+    const tasks = Array.isArray(remote.tasks) ? remote.tasks : [];
+    const taskHistory = Array.isArray(remote.taskHistory) ? remote.taskHistory : (Array.isArray(remote.completedHistory) ? remote.completedHistory : []);
+    const streak = remote.streak || (JSON.parse(localStorage.getItem(nsLocal('streak')) || '{"current":0,"last":""}'));
+    // ensure progress computed
+    updateKPIs(tasks, taskHistory);
+    reflectStreak(streak);
+    // render tasks
+    renderTasks(tasks, taskHistory);
+    return { tasks, taskHistory, streak };
+  }
+
+  async function addTask(text) {
+    if (!text || !text.trim()) return;
+    const fp = await loadAndSync();
+    const tasks = fp.tasks;
+    const id = 't_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+    tasks.push({ id, text: text.trim(), done: false, createdAt: Date.now() });
+    await saveFreePlanRemote({ tasks, taskHistory: fp.taskHistory, streak: fp.streak });
+    renderTasks(tasks, fp.taskHistory);
+    updateKPIs(tasks, fp.taskHistory);
+  }
+
+  // ---------- Wire UI ----------
+  function bindUI() {
+    if (document.getElementById('new-quote')) document.getElementById('new-quote').addEventListener('click', randomQuote);
+    if (document.getElementById('check-in')) document.getElementById('check-in').addEventListener('click', async () => {
+      await doCheckInLocal(JSON.parse(localStorage.getItem(nsLocal('streak')) || '{"current":0,"last":""}'));
+      alert('Nice! You checked in for today. Keep the streak alive.');
+    });
+
+    addBtn && addBtn.addEventListener('click', () => {
+      const val = taskInput.value.trim();
+      addTask(val);
+      taskInput.value = '';
+      taskInput.focus();
+    });
+
+    taskInput && taskInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); addBtn.click(); }
+    });
+
+    document.getElementById('export-pdf') && document.getElementById('export-pdf').addEventListener('click', () => {
+      // keep your existing exportPDF function in page; call it
+      if (typeof exportPDF === 'function') exportPDF();
+      else alert('Export not available.');
+    });
+
+    document.getElementById('download-guide') && document.getElementById('download-guide').addEventListener('click', () => {
+      if (typeof downloadGuide === 'function') downloadGuide();
+      else alert('Guide not available.');
+    });
+  }
+
+  // ---------- Init ----------
+  async function init() {
+    randomQuote();
+    bindUI();
+    await loadAndSync();
+  }
+
+  // Run
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+
+})();
+
   </script>
 </body>
 </html>
