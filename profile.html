@@ -190,6 +190,25 @@
      - Export-Funktionen ergänzt (JSON, CSV)
      - Keine Löschungen, nur Ergänzungen
   */
+    
+    const API = "http://localhost:5000/api"; // oder deine echte Domain
+
+    if (!isLoggedIn()) {
+  window.location.href = "login.html";
+}
+
+function getToken() {
+  return localStorage.getItem("token");
+}
+
+function getUser() {
+  const raw = localStorage.getItem("user");
+  return raw ? JSON.parse(raw) : null;
+}
+
+function isLoggedIn() {
+  return !!getToken();
+}
 
   (function() {
     // sync helper (attempt to restore from sessionStorage)
@@ -204,11 +223,6 @@
         }
       } catch (e) { console.warn('restoreCurrentUserFromSession failed', e); }
     }
-    restoreCurrentUserFromSession();
-
-    const getCurrentUser = () => localStorage.getItem('currentUser') || 'guest';
-    const nsFree = (key) => `ygj_free_${getCurrentUser()}_${key}`;
-    const nsProfile = (key) => `ygj_profile_${getCurrentUser()}_${key}`;
 
     // UI elements
     const elDisplayName = document.getElementById('display-name');
@@ -226,18 +240,21 @@
     const miniStats = document.getElementById('mini-stats');
 
     // hide login/signup if user present
-    function adjustHeaderAuthVisibility() {
-      const loginBtn = document.getElementById('login-btn');
-      const signupBtn = document.getElementById('signup-btn');
-      const user = getCurrentUser();
-      if (user && user !== 'guest') {
-        if (loginBtn) loginBtn.style.display = 'none';
-        if (signupBtn) signupBtn.style.display = 'none';
-      } else {
-        if (loginBtn) loginBtn.style.display = '';
-        if (signupBtn) signupBtn.style.display = '';
-      }
-    }
+   function adjustHeaderAuthVisibility() {
+  const loginBtn = document.getElementById('login-btn');
+  const signupBtn = document.getElementById('signup-btn');
+  const logoutBtn = document.getElementById('logout-btn');
+
+  if (isLoggedIn()) {
+    if (loginBtn) loginBtn.style.display = "none";
+    if (signupBtn) signupBtn.style.display = "none";
+    if (logoutBtn) logoutBtn.style.display = "block";
+  } else {
+    if (loginBtn) loginBtn.style.display = "block";
+    if (signupBtn) signupBtn.style.display = "block";
+    if (logoutBtn) logoutBtn.style.display = "none";
+  }
+}
 
     function loadStreak() {
       try { return JSON.parse(localStorage.getItem(nsFree('streak')) || '{"current":0,"last":""}'); }
@@ -245,10 +262,22 @@
     }
     function saveStreak(obj) { localStorage.setItem(nsFree('streak'), JSON.stringify(obj)); }
 
-    function loadProfile() {
-      try { return JSON.parse(localStorage.getItem(nsProfile('meta')) || '{}'); }
-      catch (e) { return {}; }
+   async function loadProfileFromBackend() {
+  const res = await fetch(`${API}/user/profile`, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`
     }
+  });
+
+  if (!res.ok) {
+    alert("Session expired. Please login again.");
+    localStorage.clear();
+    window.location.href = "login.html";
+    return null;
+  }
+
+  return await res.json();
+}
 
     function loadTasks() {
       try { return JSON.parse(localStorage.getItem(nsFree('tasks')) || '[]'); }
@@ -289,10 +318,12 @@
       return { total, done, progress, streak, level, tasks, history };
     }
 
-    function renderProfile() {
-      adjustHeaderAuthVisibility();
-      const user = getCurrentUser();
-      const profile = loadProfile();
+    async function renderProfile() {
+  adjustHeaderAuthVisibility();
+
+  const profile = await loadProfileFromBackend();
+  if (!profile) return;
+      
       elDisplayName.textContent = profile.displayName || (user === 'guest' ? 'Guest' : user);
       elEmail.textContent = profile.email || (user === 'guest' ? 'Not logged in' : profile.email || '—');
       elAvatar.src = profile.avatar || elAvatar.src;
@@ -513,7 +544,8 @@
     // Logout delegate
     document.body.addEventListener("click", (e) => {
       if (e.target && e.target.id === "logout-btn") {
-        localStorage.removeItem("currentUser");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
         sessionStorage.removeItem("ygj_user");
         sessionStorage.removeItem("ygj_token");
         localStorage.removeItem("ygj_token");
