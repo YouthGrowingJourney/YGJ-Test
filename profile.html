@@ -193,9 +193,7 @@
     
     const API = "http://localhost:5000/api"; // oder deine echte Domain
 
-    if (!isLoggedIn()) {
-  window.location.href = "login.html";
-}
+
 
 function getToken() {
   return localStorage.getItem("token");
